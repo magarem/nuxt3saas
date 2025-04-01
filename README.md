@@ -1,77 +1,63 @@
-# Nuxt Minimal Starter
+# Nuxt 3 SaaS Admin Dashboard Starter
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Este projeto é um template inicial para aplicações SaaS (Software as a Service) construídas com Nuxt 3, focado em fornecer um layout administrativo robusto e personalizável. Ele inclui um dashboard pronto para uso e funcionalidades essenciais como autenticação de usuários com diferentes níveis de acesso (roles).
 
-## Setup
+## Tecnologias Utilizadas
 
-Make sure to install dependencies:
+* **Nuxt 3:** O framework Vue.js de última geração para desenvolvimento web universal.
+* **PrimeVue:** Uma biblioteca de componentes UI completa e elegante para Vue.js.
+* **Tailwind CSS:** Um framework CSS utilitário para construção rápida de interfaces responsivas.
+* **Autenticação de Usuários:** Sistema de autenticação integrado com suporte a diferentes roles de usuários.
 
-```bash
-# npm
-npm install
+## Funcionalidades
 
-# pnpm
-pnpm install
+* **Layout Administrativo Moderno:** Interface de usuário intuitiva e responsiva, projetada para aplicações SaaS.
+* **Dashboard Personalizável:** Visualize métricas e informações importantes de forma clara e concisa.
+* **Autenticação com Roles:** Gerencie usuários com diferentes níveis de acesso e permissões.
+* **Componentes Reutilizáveis:** Construa interfaces complexas de forma rápida e eficiente com PrimeVue.
+* **Estilização Flexível:** Personalize o visual da sua aplicação com facilidade usando Tailwind CSS.
 
-# yarn
-yarn install
+## Pré-requisitos
 
-# bun
-bun install
-```
+* Node.js (versão 18 ou superior)
+* npm ou yarn ou pnpm
 
-## Development Server
+## Instalação
 
-Start the development server on `http://localhost:3000`:
+1.  Clone o repositório:
 
-```bash
-# npm
-npm run dev
+    ```bash
+    git clone [https://github.com/dolthub/dolt](https://github.com/dolthub/dolt)
+    ```
 
-# pnpm
-pnpm dev
+2.  Navegue até o diretório do projeto:
 
-# yarn
-yarn dev
+    ```bash
+    cd [nome do projeto]
+    ```
 
-# bun
-bun run dev
-```
+3.  Instale as dependências:
 
-## Production
+    ```bash
+    npm install
+    # ou
+    yarn install
+    # ou
+    pnpm install
+    ```
 
-Build the application for production:
+## Execução
 
-```bash
-# npm
-npm run build
+1.  Inicie o servidor de desenvolvimento:
 
-# pnpm
-pnpm build
+    ```bash
+    npm run dev
+    # ou
+    yarn dev
+    # ou
+    pnpm dev
+    ```
 
-# yarn
-yarn build
+2.  Acesse a aplicação no seu navegador: `http://localhost:3000`
 
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-# nuxt3_saas
-# nuxt3saas
+## Estrutura do Projeto
