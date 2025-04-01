@@ -15,6 +15,7 @@
     "@primevue/themes": "^4.3.3",
     "@tailwindcss/vite": "^4.0.17",
     "@unhead/vue": "^2.0.2",
+    "better-sqlite3": "^11.9.1",
     "jsonwebtoken": "^9.0.2",
     "nuxt": "^3.16.1",
     "nuxt-security": "^2.2.0",

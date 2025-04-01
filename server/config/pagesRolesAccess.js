@@ -1,5 +1,6 @@
-export const roles = {
+export const pagesRolesAccess = {
     '/dashboard': ['admin', 'manager', 'user', "gerem"],
+    '/lista': ['admin', 'manager', 'user'],
     '/reports': ['admin'],
     '/profile': ['admin', 'manager'],
     '/private': ['user', 'manager', 'admin2'],

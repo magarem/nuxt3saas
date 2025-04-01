@@ -3,12 +3,47 @@ import { ref } from 'vue';
 
 import AppMenuItem from './AppMenuItem.vue';
 
+
+function getUsernameFromHref(href) {
+  const match = href.match(/\/@([^/]+)/);
+  if (match) {
+    return match[0]; // Retorna @maga
+  }
+  return null;
+}
+
+
+// function getUsernameFromPath(fullPath) {
+//   const atIndex = fullPath.indexOf('/@');
+//   if (atIndex === -1) {
+//     return null; // ou '', dependendo do que você quer retornar se não encontrar
+//   }
+
+//   const start = atIndex + 2; // Início do nome do usuário (após '/@')
+//   const end = fullPath.indexOf('/', start);
+//   if (end === -1) {
+//     return fullPath.substring(start); // Se não houver mais '/', pegue até o final
+//   }
+
+//   return fullPath.substring(start, end);
+// }
+
+// 
+
+const route = useRoute();
+const username = getUsernameFromHref(location?.href||'');
+console.log('username>>>>:', username);
+console.log('route.fullPath>>>>:', route.fullPath);
+console.log('location.href:', location?.href);
+
+
 const model = ref([
     {
         label: '',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
-            { label: 'Crud', icon: 'pi pi-fw pi-id-card', to: '/crud' }
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: username +'/dashboard' },
+            { label: 'Crud', icon: 'pi pi-fw pi-id-card', to: username + '/crud' },
+            { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: username + '/lista' }
         ]
     }
 ]);

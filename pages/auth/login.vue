@@ -19,14 +19,15 @@ const login = async () => {
         body: { username: username.value, password: password.value },
       });
 
-      console.log(response);
+      console.log(555, response);
   
       if (response.success) {
         // Armazena o token JWT (por exemplo, em localStorage)
         // localStorage.setItem('token', response.token);
   
         // Redireciona para a página protegida
-        navigateTo('/');
+        navigateTo({path:'/'+username.value+'/dashboard',
+        query: { source: 'origem' }});
       } else {
         error.value = response;
       }
