@@ -59,5 +59,3 @@ Este projeto é um template inicial para aplicações SaaS (Software as a Servic
     ```
 
 2.  Acesse a aplicação no seu navegador: `http://localhost:3000`
-
-## Estrutura do Projeto
