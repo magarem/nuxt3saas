@@ -1,290 +1,429 @@
-<script setup>
-import { ProductService } from '@/service/ProductService';
-import { FilterMatchMode } from '@primevue/core/api';
-import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
-
-onMounted(() => {
-    ProductService.getProducts().then((data) => (products.value = data));
-});
-
-const toast = useToast();
-const dt = ref();
-const products = ref();
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
-const product = ref({});
-const selectedProducts = ref();
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
-const submitted = ref(false);
-const statuses = ref([
-    { label: 'INSTOCK', value: 'instock' },
-    { label: 'LOWSTOCK', value: 'lowstock' },
-    { label: 'OUTOFSTOCK', value: 'outofstock' }
-]);
-
-function formatCurrency(value) {
-    if (value) return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    return;
-}
-
-function openNew() {
-    product.value = {};
-    submitted.value = false;
-    productDialog.value = true;
-}
-
-function hideDialog() {
-    productDialog.value = false;
-    submitted.value = false;
-}
-
-function saveProduct() {
-    submitted.value = true;
-
-    if (product?.value.name?.trim()) {
-        if (product.value.id) {
-            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-        } else {
-            product.value.id = createId();
-            product.value.code = createId();
-            product.value.image = 'product-placeholder.svg';
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
-            products.value.push(product.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-        }
-
-        productDialog.value = false;
-        product.value = {};
-    }
-}
-
-function editProduct(prod) {
-    product.value = { ...prod };
-    productDialog.value = true;
-}
-
-function confirmDeleteProduct(prod) {
-    product.value = prod;
-    deleteProductDialog.value = true;
-}
-
-function deleteProduct() {
-    products.value = products.value.filter((val) => val.id !== product.value.id);
-    deleteProductDialog.value = false;
-    product.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-}
-
-function findIndexById(id) {
-    let index = -1;
-    for (let i = 0; i < products.value.length; i++) {
-        if (products.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-
-    return index;
-}
-
-function createId() {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-}
-
-function exportCSV() {
-    dt.value.exportCSV();
-}
-
-function confirmDeleteSelected() {
-    deleteProductsDialog.value = true;
-}
-
-function deleteSelectedProducts() {
-    products.value = products.value.filter((val) => !selectedProducts.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedProducts.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
-}
-
-function getStatusLabel(status) {
-    switch (status) {
-        case 'INSTOCK':
-            return 'success';
-
-        case 'LOWSTOCK':
-            return 'warn';
-
-        case 'OUTOFSTOCK':
-            return 'danger';
-
-        default:
-            return null;
-    }
-}
-</script>
-
 <template>
     <div>
-        <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
-                </template>
-
-                <template #end>
-                    <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                </template>
-            </Toolbar>
-
-            <DataTable
-                ref="dt"
-                v-model:selection="selectedProducts"
-                :value="products"
-                dataKey="id"
-                :paginator="true"
-                :rows="10"
-                :filters="filters"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
-            >
-                <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Manage Products</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Search..." />
-                        </IconField>
-                    </div>
-                </template>
-
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="code" header="Code" sortable style="min-width: 12rem"></Column>
-                <Column field="name" header="Name" sortable style="min-width: 16rem"></Column>
-                <Column header="Image">
-                    <template #body="slotProps">
-                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" class="rounded" style="width: 64px" />
-                    </template>
-                </Column>
-                <Column field="price" header="Price" sortable style="min-width: 8rem">
-                    <template #body="slotProps">
-                        {{ formatCurrency(slotProps.data.price) }}
-                    </template>
-                </Column>
-                <Column field="category" header="Category" sortable style="min-width: 10rem"></Column>
-                <Column field="rating" header="Reviews" sortable style="min-width: 12rem">
-                    <template #body="slotProps">
-                        <Rating :modelValue="slotProps.data.rating" :readonly="true" />
-                    </template>
-                </Column>
-                <Column field="inventoryStatus" header="Status" sortable style="min-width: 12rem">
-                    <template #body="slotProps">
-                        <Tag :value="slotProps.data.inventoryStatus" :severity="getStatusLabel(slotProps.data.inventoryStatus)" />
-                    </template>
-                </Column>
-                <Column :exportable="false" style="min-width: 12rem">
-                    <template #body="slotProps">
-                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
-                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
-                    </template>
-                </Column>
-            </DataTable>
+      <div class="card">
+        <Toolbar class="mb-6">
+          <template #start>
+            <Button
+              label="New"
+              icon="pi pi-plus"
+              severity="secondary"
+              class="mr-2"
+              @click="openNew"
+            />
+            <Button
+              label="Delete"
+              icon="pi pi-trash"
+              severity="secondary"
+              @click="confirmDeleteSelected"
+              :disabled="!selectedItems || !selectedItems.length"
+            />
+          </template>
+  
+          <template #end>
+            <Button
+              label="Export"
+              icon="pi pi-upload"
+              severity="secondary"
+              @click="exportCSV($event)"
+            />
+          </template>
+        </Toolbar>
+  
+        <DataTable
+          ref="dt"
+          v-model:selection="selectedItems"
+          :value="items"
+          dataKey="id"
+          :paginator="true"
+          :rows="10"
+          :filters="filters"
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          :rowsPerPageOptions="[5, 10, 25]"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
+        >
+          <template #header>
+            <div class="flex flex-wrap gap-2 items-center justify-between">
+              <h4 class="m-0">Manage Items</h4>
+              <IconField>
+                <InputIcon>
+                  <i class="pi pi-search" />
+                </InputIcon>
+                <InputText
+                  v-model="filters['global'].value"
+                  placeholder="Search..."
+                />
+              </IconField>
+            </div>
+          </template>
+  
+          <Column
+            selectionMode="multiple"
+            style="width: 3rem"
+            :exportable="false"
+          ></Column>
+          <Column
+            v-for="col in columns"
+            :field="col.field"
+            :header="col.header"
+            :sortable="col.sortable"
+            :style="col.style"
+          >
+            <template v-if="col.bodyTemplate" #body="slotProps">
+              <component
+                :is="col.bodyTemplate"
+                :slotProps="slotProps"
+                :formatCurrency="formatCurrency"
+                :getStatusLabel="getStatusLabel"
+              />
+            </template>
+          </Column>
+  
+          <Column :exportable="false" style="min-width: 12rem">
+            <template #body="slotProps">
+              <Button
+                icon="pi pi-pencil"
+                outlined
+                rounded
+                class="mr-2"
+                @click="editItem(slotProps.data)"
+              />
+              <Button
+                icon="pi pi-trash"
+                outlined
+                rounded
+                severity="danger"
+                @click="confirmDeleteItem(slotProps.data)"
+              />
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+  
+      <Dialog
+        v-model:visible="itemDialog"
+        :style="{ width: '450px' }"
+        header="Item Details"
+        :modal="true"
+      >
+        <div class="flex flex-col gap-6">
+          <template v-for="col in columns" :key="col.field">
+            <div v-if="col.editTemplate">
+              <label :for="col.field" class="block font-bold mb-3">{{
+                col.header
+              }}</label>
+              <component
+                :is="col.editTemplate"
+                v-model="item[col.field]"
+                :item="item"
+                :options="col.options"
+                :submitted="submitted"
+                :field="col.field"
+              />
+              <small
+                v-if="submitted && !item[col.field]"
+                class="text-red-500"
+              >{{ col.header }} is required.</small
+              >
+            </div>
+          </template>
         </div>
-
-        <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
-            <div class="flex flex-col gap-6">
-                <img v-if="product.image" :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`" :alt="product.image" class="block m-auto pb-4" />
-                <div>
-                    <label for="name" class="block font-bold mb-3">Name</label>
-                    <InputText id="name" v-model.trim="product.name" required="true" autofocus :invalid="submitted && !product.name" fluid />
-                    <small v-if="submitted && !product.name" class="text-red-500">Name is required.</small>
-                </div>
-                <div>
-                    <label for="description" class="block font-bold mb-3">Description</label>
-                    <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" fluid />
-                </div>
-                <div>
-                    <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
-                    <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status" fluid></Select>
-                </div>
-
-                <div>
-                    <span class="block font-bold mb-4">Category</span>
-                    <div class="grid grid-cols-12 gap-4">
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category1" v-model="product.category" name="category" value="Accessories" />
-                            <label for="category1">Accessories</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category2" v-model="product.category" name="category" value="Clothing" />
-                            <label for="category2">Clothing</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category3" v-model="product.category" name="category" value="Electronics" />
-                            <label for="category3">Electronics</label>
-                        </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category4" v-model="product.category" name="category" value="Fitness" />
-                            <label for="category4">Fitness</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-6">
-                        <label for="price" class="block font-bold mb-3">Price</label>
-                        <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" fluid />
-                    </div>
-                    <div class="col-span-6">
-                        <label for="quantity" class="block font-bold mb-3">Quantity</label>
-                        <InputNumber id="quantity" v-model="product.quantity" integeronly fluid />
-                    </div>
-                </div>
-            </div>
-
-            <template #footer>
-                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Save" icon="pi pi-check" @click="saveProduct" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product"
-                    >Are you sure you want to delete <b>{{ product.name }}</b
-                    >?</span
-                >
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                <Button label="Yes" icon="pi pi-check" @click="deleteProduct" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
-            </template>
-        </Dialog>
+  
+        <template #footer>
+          <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
+          <Button label="Save" icon="pi pi-check" @click="saveItem" />
+        </template>
+      </Dialog>
+  
+      <Dialog
+        v-model:visible="deleteItemDialog"
+        :style="{ width: '450px' }"
+        header="Confirm"
+        :modal="true"
+      >
+        <div class="flex items-center gap-4">
+          <i class="pi pi-exclamation-triangle !text-3xl" />
+          <span v-if="item"
+            >Are you sure you want to delete <b>{{ item.name }}</b
+            >?</span
+          >
+        </div>
+        <template #footer>
+          <Button label="No" icon="pi pi-times" text @click="deleteItemDialog = false" />
+          <Button label="Yes" icon="pi pi-check" @click="deleteItem" />
+        </template>
+      </Dialog>
+  
+      <Dialog
+        v-model:visible="deleteItemsDialog"
+        :style="{ width: '450px' }"
+        header="Confirm"
+        :modal="true"
+      >
+        <div class="flex items-center gap-4">
+          <i class="pi pi-exclamation-triangle !text-3xl" />
+          <span v-if="item">Are you sure you want to delete the selected items?</span>
+        </div>
+        <template #footer>
+          <Button label="No" icon="pi pi-times" text @click="deleteItemsDialog = false" />
+          <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedItems" />
+        </template>
+      </Dialog>
     </div>
-</template>
+  </template>
+  
+  <script setup>
+  import { ref, onMounted } from 'vue';
+  import { useToast } from 'primevue/usetoast';
+  import { FilterMatchMode } from '@primevue/core/api';
+  import InputText from 'primevue/inputtext';
+  import InputNumber from 'primevue/inputnumber';
+  import Textarea from 'primevue/textarea';
+  import Select from 'primevue/select';
+  import RadioButton from 'primevue/radiobutton';
+  import Rating from 'primevue/rating';
+  import Tag from 'primevue/tag';
+  
+  const toast = useToast();
+  const dt = ref();
+  const items = ref([]);
+  const itemDialog = ref(false);
+  const deleteItemDialog = ref(false);
+  const deleteItemsDialog = ref(false);
+  const item = ref({});
+  const selectedItems = ref([]);
+  const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+  const submitted = ref(false);
+  const route = useRoute();
+  const username = route.params.username;
+  const columns = ref([
+    { field: 'id', header: 'ID', sortable: true, style: { 'min-width': '8rem' } },
+    { field: 'nome', header: 'Nome', sortable: true, style: { 'min-width': '16rem' }, editTemplate: InputText },
+    { field: 'email', header: 'Email', sortable: true, style: { 'min-width': '16rem' }, editTemplate: InputText },
+    { field: 'telefone', header: 'Telefone', sortable: true, style: { 'min-width': '12rem' }, editTemplate: InputText },
+  ]);
+  
+  onMounted(async () => {
+    // Replace with your data fetching logic
+    
+        // const { data: contatos } = await useFetch(`/api/${username}/lista`);
+    const data = await fetchData();
+    items.value = data;
+  });
+
+  async function executeQuery(username, sql) {  // Added username
+  try {
+    const response = await fetch(`/api/${username}/query`, {  // Changed URL
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ sql })
+    });
+     // Handle errors like before
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    // Handle error
+  }
+}
+  
+  async function fetchData() {
+    // const route = useRoute();
+    // const username = route.params.username;
+    const data = await executeQuery(username, "SELECT id, nome, email, telefone FROM contatos");
+    return data;
+  
+    // Placeholder data for demonstration
+    // return [
+    //   { id: 1, nome: 'João Silva', email: 'joao@email.com', telefone: '123-456-7890' },
+    //   { id: 2, nome: 'Maria Souza', email: 'maria@email.com', telefone: '987-654-3210' },
+    //   { id: 3, nome: 'Carlos Ferreira', email: 'carlos@email.com', telefone: '111-222-3333' },
+    // ];
+  }
+  
+  function openNew() {
+    item.value = {};
+    submitted.value = false;
+    itemDialog.value = true;
+  }
+  
+  function hideDialog() {
+    itemDialog.value = false;
+    submitted.value = false;
+  }
+
+  async function saveItem() {
+  submitted.value = true;
+
+  let isValid = true;
+  for (const col of columns.value) {
+    if (col.editTemplate && !item.value[col.field]) {
+      isValid = false;
+      break;
+    }
+  }
+
+  if (isValid) {
+    try {
+
+       
+     
+        const response = await $fetch(`/api/${username}/upsert`, {
+        method: 'POST',
+        body: {
+          table: 'contatos', // Substitua pelo nome da sua tabela
+          data: item.value,
+          condition: item.value.id ? `id = ${item.value.id}` : null, // Condição para update (se existir id)
+        },
+      });
+
+      if (response && response.message) {
+        toast.add({
+          severity: 'success',
+          summary: 'Successful',
+          detail: response.message,
+          life: 3000,
+        });
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to save item',
+          life: 3000,
+        });
+      }
+
+      itemDialog.value = false;
+      item.value = {};
+      // Aqui você pode adicionar lógica para atualizar a lista de itens, se necessário.
+      // Por exemplo, buscar novamente os dados da tabela.
+    } catch (error) {
+      console.error('Error saving item:', error);
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'An error occurred while saving the item.',
+        life: 3000,
+      });
+    }
+  }
+}
+  
+  function editItem(selectedItem) {
+    item.value = { ...selectedItem };
+    itemDialog.value = true;
+  }
+  
+  function confirmDeleteItem(selectedItem) {
+    item.value = selectedItem;
+    deleteItemDialog.value = true;
+  }
+  
+async function deleteItem() {
+  try {
+    const response = await $fetch(`/api/${username}/delete`, {
+      method: 'POST',
+      body: {
+        table: 'contatos', // Substitua pelo nome da sua tabela
+        condition: `id = ${item.value.id}`,
+      },
+    });
+
+    if (response && response.message) {
+      // Excluiu com sucesso no banco de dados
+      // Se necessário, atualize a lista localmente ou busque os dados novamente
+      // items.value = items.value.filter((val) => val.id !== item.value.id); //Remova esta linha se voce for buscar os dados novamente.
+      toast.add({
+        severity: 'success',
+        summary: 'Successful',
+        detail: response.message,
+        life: 3000,
+      });
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to delete item',
+        life: 3000,
+      });
+    }
+
+    deleteItemDialog.value = false;
+    item.value = {};
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'An error occurred while deleting the item.',
+      life: 3000,
+    });
+  }
+}
+  
+  function findIndexById(id) {
+    return items.value.findIndex((val) => val.id === id);
+  }
+  
+  function createId() {
+    // Replace with your actual ID generation logic (e.g., UUID)
+    let id = '';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 5; i++) {
+      id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+  }
+  
+  function exportCSV() {
+    dt.value.exportCSV();
+  }
+  
+  function confirmDeleteSelected() {
+    deleteItemsDialog.value = true;
+  }
+  
+  function deleteSelectedItems() {
+    items.value = items.value.filter((val) => !selectedItems.value.includes(val));
+    deleteItemsDialog.value = false;
+    selectedItems.value = null;
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Items Deleted', life: 3000 });
+  }
+  
+  // Example body templates (replace with your specific needs)
+  const ImageBody = {
+    template: '<img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" class="rounded" style="width: 64px" />',
+  };
+  
+  const PriceBody = {
+    template: '{{ formatCurrency(slotProps.data.price) }}',
+  };
+  
+  const RatingBody = {
+    template: '<Rating :modelValue="slotProps.data.rating" :readonly="true" />',
+  };
+  
+  const StatusBody = {
+    template: '<Tag :value="slotProps.data.inventoryStatus" :severity="getStatusLabel(slotProps.data.inventoryStatus)" />',
+  };
+  
+  function formatCurrency(value) {
+    if (value) return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    return;
+  }
+  
+  function getStatusLabel(status) {
+    switch (status) {
+      case 'INSTOCK':
+        return 'success';
+      case 'LOWSTOCK':
+        return 'warn';
+      case 'OUTOFSTOCK':
+        return 'danger';
+      default:
+        return null;
+    }
+  }
+  </script>
