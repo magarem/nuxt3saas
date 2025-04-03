@@ -233,13 +233,34 @@ const columns = ref([
     sortable: true,
     style: { "min-width": "12rem" },
     editTemplate: InputText
+  },
+  {
+    field: "password",
+    header: "Senha",
+    sortable: true,
+    style: { "min-width": "12rem" },
+    editTemplate: InputText
+  },
+  {
+    field: "roles",
+    header: "Roles",
+    sortable: true,
+    style: { "min-width": "12rem" },
+    editTemplate: InputText
+  },
+  {
+    field: "status",
+    header: "Status",
+    sortable: true,
+    style: { "min-width": "12rem" },
+    editTemplate: InputText
   }
 ]);
 
 onMounted(async () => {
   // Replace with your data fetching logic
 
-  // const { data: contatos } = await useFetch(`/api/${username}/lista`);
+  // const { data: users } = await useFetch(`/api/${username}/lista`);
   const data = await fetchData();
   items.value = data;
 });
@@ -268,7 +289,7 @@ async function fetchData() {
   // const username = route.params.username;
   const data = await executeQuery(
     username,
-    "SELECT id, nome, email, telefone FROM contatos"
+    "SELECT * FROM users"
   );
   return data;
 
@@ -307,7 +328,7 @@ async function saveItem() {
       const response = await $fetch(`/api/${username}/upsert`, {
         method: "POST",
         body: {
-          table: "contatos", // Substitua pelo nome da sua tabela
+          table: "users", // Substitua pelo nome da sua tabela
           data: item.value,
           condition: item.value.id ? `id = ${item.value.id}` : null // Condição para update (se existir id)
         }
@@ -360,7 +381,7 @@ async function deleteItem() {
     const response = await $fetch(`/api/${username}/delete`, {
       method: "POST",
       body: {
-        table: "contatos", // Substitua pelo nome da sua tabela
+        table: "users", // Substitua pelo nome da sua tabela
         condition: `id = ${item.value.id}`
       }
     });

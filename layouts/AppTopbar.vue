@@ -1,14 +1,22 @@
 <script setup>
-
-import AppConfigurator from './AppConfigurator.vue';
-
+// import AppConfigurator from './AppConfigurator.vue';
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
-const { data: ret } = await useFetch('/api/user');
+function getUsernameFromHref(href) {
+  const match = href.split('/')[1]
+  if (match) {
+    return match;
+  }
+  return null;
+}
+
+const route = useRoute();
+const username = getUsernameFromHref(route.fullPath||'');
+const { data: ret } = await useFetch('/api/' + username + '/user');
 
 const menu = ref();
 const items = ref([
     {
-        label: ret.value.user.nome,
+        label: ret.value.user.username,
         items: [
             {
                 label: 'Sair',
@@ -30,9 +38,9 @@ const toggle = (event) => {
 };
 
 const logout = async () => {
-  await $fetch('/api/logout')
+  await $fetch('/api/' + username + '/logout')
   useCookie('auth_token').value = null
-  navigateTo('/auth/login')
+  navigateTo('/' + username + '/auth/login')
 }
 </script>
 

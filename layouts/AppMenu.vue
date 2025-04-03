@@ -5,9 +5,9 @@ import AppMenuItem from './AppMenuItem.vue';
 
 
 function getUsernameFromHref(href) {
-  const match = href.match(/\/@([^/]+)/);
+  const match = href.split('/')[1]
   if (match) {
-    return match[0]; // Retorna @maga
+    return match;
   }
   return null;
 }
@@ -31,7 +31,7 @@ function getUsernameFromHref(href) {
 // 
 
 const route = useRoute();
-const username = getUsernameFromHref(location?.href||'');
+const username = getUsernameFromHref(route.fullPath||'');
 console.log('username>>>>:', username);
 console.log('route.fullPath>>>>:', route.fullPath);
 console.log('location.href:', location?.href);
@@ -41,9 +41,9 @@ const model = ref([
     {
         label: '',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: username +'/dashboard' },
-            { label: 'Crud', icon: 'pi pi-fw pi-id-card', to: username + '/crud' },
-            { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: username + '/lista' }
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/'+username +'/' },
+            { label: 'Usuários', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/users' },
+            // { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/lista' }
         ]
     }
 ]);

@@ -1,24 +1,43 @@
-// plugins/sqlite.server.js
-import Database from 'better-sqlite3';
-import path from 'path';
+import sqlite3 from 'better-sqlite3';
+import fs from 'fs';
+function criarBancoDeDados(nomeUsuario) {
+  const nomeArquivo = `data/${nomeUsuario}.db`;
 
-export default defineNuxtPlugin(() => {
-  return {
-    provide: {
-      sqlite: {
-        getContatos: (usuario) => {
-          const dbPath = path.resolve(`./data/${usuario}.db`);
-          try {
-            const db = new Database(dbPath, { readonly: true });
-            const contatos = db.prepare('SELECT * FROM contatos').all();
-            db.close();
-            return contatos;
-          } catch (error) {
-            console.error('Erro ao acessar o banco de dados:', error);
-            return [];
-          }
-        },
-      },
-    },
-  };
-});
+  // Verifica se o arquivo já existe
+  if (fs.existsSync(nomeArquivo)) {
+    console.log(`Banco de dados ${nomeArquivo} já existe.`);
+    return;
+  }
+
+  try {
+    const db = new sqlite3(nomeArquivo);
+
+    // Cria a tabela contatos
+    db.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT,
+        email TEXT,
+        telefone TEXT,
+        password TEXT,
+        roles TEXT,
+        status TEXT
+      )
+    `);
+
+    console.log(`Banco de dados ${nomeArquivo} criado com sucesso.`);
+    db.close();
+  } catch (error) {
+    console.error(`Erro ao criar o banco de dados ${nomeArquivo}:`, error);
+  }
+}
+
+// Exemplo de uso:
+const nomeUsuario = process.argv[2]; // Pega o nome do usuário do argumento da linha de comando
+
+if (!nomeUsuario) {
+  console.error('Nome do usuário não fornecido.');
+  process.exit(1);
+}
+
+criarBancoDeDados(nomeUsuario);

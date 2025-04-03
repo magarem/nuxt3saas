@@ -10,11 +10,12 @@ const username = ref('maga');
 const password = ref('12345');
 const checked = ref(false);
 const error = ref('');
-
+const route = useRoute();
+const account_username = route.params.username;
 
 const login = async () => {
     try {
-      const response = await $fetch('/api/login', {
+      const response = await $fetch(`/api/${account_username}/login`, {
         method: 'POST',
         body: { username: username.value, password: password.value },
       });
@@ -26,8 +27,7 @@ const login = async () => {
         // localStorage.setItem('token', response.token);
   
         // Redireciona para a página protegida
-        navigateTo({path:'/'+username.value+'/dashboard',
-        query: { source: 'origem' }});
+        navigateTo({path:'/'+account_username+'/'});
       } else {
         error.value = response;
       }
