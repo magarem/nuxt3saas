@@ -4,17 +4,17 @@ function criarBancoDeDados(nomeUsuario) {
   const nomeArquivo = `data/${nomeUsuario}.db`;
 
   // Verifica se o arquivo já existe
-  if (fs.existsSync(nomeArquivo)) {
-    console.log(`Banco de dados ${nomeArquivo} já existe.`);
-    return;
-  }
+//   if (fs.existsSync(nomeArquivo)) {
+//     console.log(`Banco de dados ${nomeArquivo} já existe.`);
+//     return;
+//   }
 
   try {
     const db = new sqlite3(nomeArquivo);
 
     // Cria a tabela contatos
     db.exec(`
-      CREATE TABLE users (
+      CREATE TABLE if not exists users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT,
         email TEXT,
@@ -24,6 +24,14 @@ function criarBancoDeDados(nomeUsuario) {
         status TEXT
       )
     `);
+
+    db.exec(`
+        CREATE TABLE page_roles (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          page TEXT,
+          roles TEXT
+        )
+      `);
 
     console.log(`Banco de dados ${nomeArquivo} criado com sucesso.`);
     db.close();

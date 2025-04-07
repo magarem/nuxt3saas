@@ -41,8 +41,10 @@ const model = ref([
     {
         label: '',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/'+username +'/' },
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/'+username +'/dashboard' },
             { label: 'Usuários', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/users' },
+            { label: 'Permissões', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/page_roles' },
+            { label: 'Teste', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/teste' }
             // { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/lista' }
         ]
     }

@@ -1,15 +1,23 @@
 <template>
-  <div>
-    <h1>Bem-vindo, {{ ret.user.username }}!</h1>
-  </div>
 </template>
-
 <script setup>
-const route = useRoute();
-const username = route.params.username;
+definePageMeta({
+  layout: false
+})
+const router = useRouter();
+const currentPath = router.currentRoute.value.path
+console.log('currentPath>>>>:', currentPath + '/dashboard');
 
-const { data: ret } = await useFetch("/api/" + username + "/user");
+const response = await $fetch(`/api${currentPath}/user`);
 
-// Aqui você pode buscar os dados da empresa usando o parâmetro 'empresa'
-// e renderizar o conteúdo específico para essa empresa.
+console.log('response>>>>:', response);
+
+if (response.statusCode == 401) {
+  // Redireciona para a página de login
+  router.push(currentPath +'/auth/login');
+} else {
+  // Redireciona para a página de dashboard
+  router.push(currentPath + '/dashboard');
+}
+
 </script>

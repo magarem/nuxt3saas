@@ -44,7 +44,7 @@ export default defineEventHandler(async (event : H3Event) => {
   const token = jwt.sign({
     domain: account_username,
     username: findUser.usuario.nome,
-    role: findUser.usuario.role
+    roles: findUser.usuario.roles
   }, SECRET_KEY, {expiresIn: "1h"});
 
   setCookie(event, "auth_token", token, {

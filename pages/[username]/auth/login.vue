@@ -25,9 +25,10 @@ const login = async () => {
       if (response.success) {
         // Armazena o token JWT (por exemplo, em localStorage)
         // localStorage.setItem('token', response.token);
+        console.log('/'+account_username+'/');
   
         // Redireciona para a página protegida
-        navigateTo({path:'/'+account_username+'/'});
+        navigateTo({path:'/'+account_username+'/dashboard'});
       } else {
         error.value = response;
       }

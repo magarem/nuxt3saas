@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
   // const auth = getCookie(event, "user_logged");
 
   if (!authToken) {
-    throw createError({statusCode: 401, statusMessage: "Unauthorized"});
+    // throw createError({statusCode: 401, statusMessage: "Unauthorized"});
+    return {statusCode: 401, statusMessage: "Unauthorized"};
   }
 
   const decoded = jwt.verify(authToken, "chave_secreta");
