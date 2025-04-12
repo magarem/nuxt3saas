@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const { table, condition } = body;
 
   const username = event.context.params.username;
-  const dbPath = path.resolve(`./data/${username}.db`);
+  const dbPath = path.resolve(`./server/data/${username}.db`);
   const db = new Database(dbPath); 
 
   if (!table || !condition) {

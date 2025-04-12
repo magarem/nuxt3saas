@@ -1,17 +1,15 @@
 <script setup>
-import { ref } from 'vue';
+import { ref } from "vue";
 
-import AppMenuItem from './AppMenuItem.vue';
-
+import AppMenuItem from "./AppMenuItem.vue";
 
 function getUsernameFromHref(href) {
-  const match = href.split('/')[1]
+  const match = href.split("/")[1];
   if (match) {
     return match;
   }
   return null;
 }
-
 
 // function getUsernameFromPath(fullPath) {
 //   const atIndex = fullPath.indexOf('/@');
@@ -28,36 +26,66 @@ function getUsernameFromHref(href) {
 //   return fullPath.substring(start, end);
 // }
 
-// 
+//
 
 const route = useRoute();
-const username = getUsernameFromHref(route.fullPath||'');
-console.log('username>>>>:', username);
-console.log('route.fullPath>>>>:', route.fullPath);
-console.log('location.href:', location?.href);
-
+const username = getUsernameFromHref(route.fullPath || "");
+console.log("username>>>>:", username);
+console.log("route.fullPath>>>>:", route.fullPath);
+console.log("location.href:", location?.href);
 
 const model = ref([
-    {
-        label: '',
+  {
+    label: "",
+    items: [
+      {
+        label: "Dashboard",
+        icon: "pi pi-fw pi-home",
+        to: "/" + username + "/dashboard"
+      },
+      {
+        label: "Teste",
+        icon: "pi pi-fw pi-id-card",
+        to: "/" + username + "/teste"
+      },
+      {
+        label: "Auth",
+        icon: "pi pi-fw pi-briefcase",
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/'+username +'/dashboard' },
-            { label: 'Usuários', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/users' },
-            { label: 'Permissões', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/page_roles' },
-            { label: 'Teste', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/teste' }
-            // { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/lista' }
+          {
+            label: "Usuários",
+            icon: "pi pi-fw pi-id-card",
+            to: "/" + username + "/users"
+          },
+          {
+            label: "Categoria do usuário",
+            icon: "pi pi-fw pi-id-card",
+            to: "/" + username + "/roles"
+          },
+          {
+            label: "Páginas",
+            icon: "pi pi-fw pi-id-card",
+            to: "/" + username + "/pages"
+          }
+          // { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/lista' }
         ]
-    }
+      }
+    ]
+  }
 ]);
 </script>
 
 <template>
-    <ul class="layout-menu">
-        <template v-for="(item, i) in model" :key="item">
-            <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
-            <li v-if="item.separator" class="menu-separator"></li>
-        </template>
-    </ul>
+  <ul class="layout-menu">
+    <template v-for="(item, i) in model" :key="item">
+      <app-menu-item
+        v-if="!item.separator"
+        :item="item"
+        :index="i"
+      ></app-menu-item>
+      <li v-if="item.separator" class="menu-separator"></li>
+    </template>
+  </ul>
 </template>
 
 <style lang="scss" scoped></style>

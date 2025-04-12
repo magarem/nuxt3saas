@@ -11,12 +11,17 @@ function getUsernameFromHref(href) {
 
 const route = useRoute();
 const username = getUsernameFromHref(route.fullPath||'');
+console.log('username>>>>:', username);
 const { data: ret } = await useFetch('/api/' + username + '/user');
-
+console.log('ret>>>>:::', ret.value);
+if (!ret.value?.user) {
+    // Redireciona para a página de login
+    navigateTo('/' + username + '/auth/login');
+}
 const menu = ref();
 const items = ref([
     {
-        label: ret.value.user.username,
+        label: ret.value.user?.username,
         items: [
             {
                 label: 'Sair',

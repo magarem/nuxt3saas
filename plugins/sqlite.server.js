@@ -7,7 +7,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     provide: {
       sqlite: {
         getContatos: (usuario) => {
-          const dbPath = path.resolve(`./data/${usuario}.db`); // Constrói o caminho dinamicamente
+          const dbPath = path.resolve(`./server/data/${usuario}.db`); // Constrói o caminho dinamicamente
           try {
             const db = new Database(dbPath, { readonly: true });
             const contatos = db.prepare('SELECT * FROM contatos').all();

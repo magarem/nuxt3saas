@@ -22,6 +22,11 @@ export default defineNuxtConfig({
   vite: {
       plugins: [
         tailwindcss(),
-      ]
+      ],
+      server: {
+        watch: {
+          ignored: ['**/*.db', '**/server/data/*.db'],
+        },
+      }
     }
 })

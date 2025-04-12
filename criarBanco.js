@@ -1,13 +1,14 @@
-import sqlite3 from 'better-sqlite3';
-import fs from 'fs';
+import sqlite3 from "better-sqlite3";
+import fs from "fs";
+
 function criarBancoDeDados(nomeUsuario) {
-  const nomeArquivo = `data/${nomeUsuario}.db`;
+  const nomeArquivo = `server/data/${nomeUsuario}.db`;
 
   // Verifica se o arquivo já existe
-//   if (fs.existsSync(nomeArquivo)) {
-//     console.log(`Banco de dados ${nomeArquivo} já existe.`);
-//     return;
-//   }
+  // if (fs.existsSync(nomeArquivo)) {
+  //     console.log(`Banco de dados ${nomeArquivo} já existe.`);
+  //     return;
+  // }
 
   try {
     const db = new sqlite3(nomeArquivo);
@@ -26,12 +27,47 @@ function criarBancoDeDados(nomeUsuario) {
     `);
 
     db.exec(`
-        CREATE TABLE page_roles (
+        CREATE TABLE if not exists roles (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          page TEXT,
-          roles TEXT
+          name TEXT,
+          desc TEXT
         )
       `);
+
+    db.exec(`
+      CREATE TABLE if not exists user_roles (
+        user_id INTEGER NOT NULL,
+        role_id INTEGER NOT NULL,
+        PRIMARY KEY (user_id, role_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE
+    );
+    
+    CREATE INDEX if not exists idx_user_id ON user_roles (user_id);
+
+    `);
+
+    db.exec(`
+    CREATE TABLE if not exists pages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      page VARCHAR(255) NOT NULL UNIQUE, 
+      description TEXT            
+  );
+
+    `);
+
+    db.exec(`
+        CREATE TABLE if not exists page_roles (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          page_id INTEGER NOT NULL,
+          role_id INTEGER NOT NULL,
+          FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
+          UNIQUE (page_id, role_id)
+      );
+      
+      CREATE INDEX if not exists idx_page_roles_page_id ON page_roles(page_id);
+     `);
 
     console.log(`Banco de dados ${nomeArquivo} criado com sucesso.`);
     db.close();
@@ -44,7 +80,7 @@ function criarBancoDeDados(nomeUsuario) {
 const nomeUsuario = process.argv[2]; // Pega o nome do usuário do argumento da linha de comando
 
 if (!nomeUsuario) {
-  console.error('Nome do usuário não fornecido.');
+  console.error("Nome do usuário não fornecido.");
   process.exit(1);
 }
 

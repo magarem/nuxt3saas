@@ -4,14 +4,14 @@
       <Toolbar class="mb-1">
         <template #start>
           <Button
-            label="New"
+            label="Novo"
             icon="pi pi-plus"
             severity="secondary"
             class="mr-2"
             @click="openNew"
           />
           <Button
-            label="Delete"
+            label="Excluir"
             icon="pi pi-trash"
             severity="secondary"
             @click="confirmDeleteSelected"
@@ -21,7 +21,7 @@
 
         <template #end>
           <Button
-            label="Export"
+            label="Exportar"
             icon="pi pi-upload"
             severity="secondary"
             @click="exportCSV($event)"
@@ -38,11 +38,11 @@
         :filters="filters"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         :rowsPerPageOptions="[5, 10, 25]"
-        currentPageReportTemplate="{first} até {last} de {totalRecords} itenxs"
+        currentPageReportTemplate="{first} até {last} de {totalRecords} páginas"
       >
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
-            <h4 class="m-0">Listagem</h4>
+            <h4 class="m-0">Páginas</h4>
             <IconField>
               <InputIcon>
                 <i class="pi pi-search" />
@@ -69,19 +69,27 @@
           :sortable="col.sortable"
           :style="col.style"
         >
-          <template #body="slotProps">
-            <!-- {{ formatValue(slotProps.data[col.field]) }} -->
+          <!-- <template #body="slotProps">
             {{ slotProps.data[col.field] }}
-          </template>
-
-          <!-- <template v-if="col.bodyTemplate" #body="slotProps">
-            <component
-              :is="col.bodyTemplate"
-              :slotProps="slotProps"
-              :formatCurrency="formatCurrency"
-              :getStatusLabel="getStatusLabel"
-            />
           </template> -->
+        
+        
+        
+          <template v-if="col.bodyTemplate">
+      <component
+        :is="col.bodyTemplate"
+        :slotProps="slotProps"
+        :formatCurrency="formatCurrency" 
+        :getStatusLabel="getStatusLabel" 
+      />
+    </template>
+    <template v-else>
+      {{ slotProps.data[col.field] }}
+    </template>
+        
+        
+        
+        
         </Column>
 
         <Column :exportable="false" style="min-width: 12rem">
@@ -108,7 +116,7 @@
     <Dialog
       v-model:visible="itemDialog"
       :style="{ width: '450px' }"
-      header="Item Details"
+      header="Detalhes da Página"
       :modal="true"
     >
       <div class="flex flex-col gap-6">
@@ -117,7 +125,7 @@
             <label :for="col.field" class="block font-bold mb-3">{{
               col.header
             }}</label>
-            
+
             <component
               :is="col.editTemplate"
               v-model="item[col.field]"
@@ -127,61 +135,61 @@
               :field="col.field"
             />
             <small v-if="submitted && !item[col.field]" class="text-red-500"
-              >{{ col.header }} is required.</small
+              >{{ col.header }} é obrigatório.</small
             >
           </div>
         </template>
       </div>
 
       <template #footer>
-        <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-        <Button label="Save" icon="pi pi-check" @click="saveItem" />
+        <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
+        <Button label="Salvar" icon="pi pi-check" @click="saveItem" />
       </template>
     </Dialog>
 
     <Dialog
       v-model:visible="deleteItemDialog"
       :style="{ width: '450px' }"
-      header="Confirm"
+      header="Confirmar Exclusão"
       :modal="true"
     >
       <div class="flex items-center gap-4">
         <i class="pi pi-exclamation-triangle !text-3xl" />
         <span v-if="item"
-          >Excluir item <b>{{ item.name }}</b
+          >Excluir página <b>{{ item.page }}</b
           >?</span
         >
       </div>
       <template #footer>
         <Button
-          label="No"
+          label="Não"
           icon="pi pi-times"
           text
           @click="deleteItemDialog = false"
         />
-        <Button label="Yes" icon="pi pi-check" @click="deleteItem" />
+        <Button label="Sim" icon="pi pi-check" @click="deleteItem" />
       </template>
     </Dialog>
 
     <Dialog
       v-model:visible="deleteItemsDialog"
       :style="{ width: '450px' }"
-      header="Confirm"
+      header="Confirmar Exclusão"
       :modal="true"
     >
       <div class="flex items-center gap-4">
         <i class="pi pi-exclamation-triangle !text-3xl" />
-        <span v-if="item">Excluir itens selecionados?</span>
+        <span v-if="item">Excluir páginas selecionadas?</span>
       </div>
       <template #footer>
         <Button
-          label="No"
+          label="Não"
           icon="pi pi-times"
           text
           @click="deleteItemsDialog = false"
         />
         <Button
-          label="Yes"
+          label="Sim"
           icon="pi pi-check"
           text
           @click="deleteSelectedItems"
@@ -192,7 +200,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import InputText from "primevue/inputtext";
@@ -219,60 +227,39 @@ const filters = ref({
 const submitted = ref(false);
 const route = useRoute();
 const username = route.params.username;
+
 let data_roles = ref([]);
 const dataRoles = await executeQuery(username, "SELECT id, name FROM roles");
-data_roles.value = dataRoles?.map(x => ({key: x.id, value: x.name}));
+data_roles.value = dataRoles?.map(x => ({ key: x.id, value: x.name }));
 console.log("Fetched dataRoles----+:", data_roles.value);
-
-let data_pages = ref([]);
-const dataPages = await executeQuery(username, "SELECT * FROM pages");
-data_pages.value = dataPages?.map(x => ({key: x.id, value: x.page}));
-console.log("Fetched data_pages----+:", data_pages.value);
 
 const visibleColumns = computed(() => {
   return columns.value.filter(col => !col.hidden);
 });
 
 const columns = ref([
- 
   {
-    field: "page_name", // Coluna para exibição na tabela
-    header: "pages",
+    field: "id",
+    header: "ID",
+    sortable: true,
+    style: { "min-width": "8rem" },
+    // hidden: true
+  }, // Ocultar o ID na edição
+  {
+    field: "page",
+    header: "Página",
+    sortable: true,
+    style: { "min-width": "16rem" },
+    editTemplate: InputText
+  },{
+    field: "roles_names", // Coluna para exibição na tabela
+    header: "Roles",
     sortable: true,
     style: { "min-width": "12rem" },
-    editTemplate: CustomSelect, // Usar o CustomSelect para editar
-    bodyTemplate: (slotProps) => slotProps.data.page_name, // Exibe os nomes concatenados
-    // editTemplate: true, // Não usar este campo para editar
-    options: data_pages.value, 
-  },
-  // {
-  //   field: "page_ids", // Coluna para edição
-  //   header: "pages ids", // Pode manter o mesmo header ou mudar para "Selecionar Roles"
-  //   sortable: true,
-  //   style: { "min-width": "12rem" },
-  //   editTemplate: CustomCheckbox, // Usar o CustomCheckbox para editar
-  //   options: data_pages.value, // Passar as opções para o CustomCheckbox
-  //   hidden: true, // Ocultar esta coluna na tabela (opcional, pode remover se não quiser)
-  // },
-  // {
-  //   field: "roles_names", // Coluna para exibição na tabela
-  //   header: "Roles",
-  //   sortable: true,
-  //   style: { "min-width": "12rem" },
-  //   bodyTemplate: (slotProps) => slotProps.data.roles_names, // Exibe os nomes concatenados
-  //   editTemplate: null, // Não usar este campo para editar
-  // },
-  {
-    field: "roles_names", // Coluna para edição
-    header: "Roles", // Pode manter o mesmo header ou mudar para "Selecionar Roles"
-    sortable: true,
-    style: { "min-width": "12rem" },
-    editTemplate: null, // Usar o CustomCheckbox para editar
-    options: data_roles.value, // Passar as opções para o CustomCheckbox
     bodyTemplate: (slotProps) => slotProps.data.roles_names, // Exibe os nomes concatenados
-    // hidden: true, // Ocultar esta coluna na tabela (opcional, pode remover se não quiser)
-  }
-  ,{
+    editTemplate: null, // Não usar este campo para editar
+  },
+  {
     field: "roles_ids", // Coluna para edição
     header: "Roles", // Pode manter o mesmo header ou mudar para "Selecionar Roles"
     sortable: true,
@@ -280,41 +267,42 @@ const columns = ref([
     editTemplate: CustomCheckbox, // Usar o CustomCheckbox para editar
     options: data_roles.value, // Passar as opções para o CustomCheckbox
     hidden: true, // Ocultar esta coluna na tabela (opcional, pode remover se não quiser)
-  },
+  }
 ]);
 
 onMounted(async () => {
-  const data = await fetchData();
-  items.value = data;
+  await fetchData();
 });
 
-
 function formatValue(value) {
-  if (typeof value == 'object') {
-    return value.join(', '); // Format as JSON string
+  if (typeof value == "object") {
+    return value.join(", ");
   }
-  return value 
+  return value;
 }
 
 async function executeQuery(username, sql) {
-  // Added username
   try {
     const response = await fetch(`/api/${username}/query`, {
-      // Changed URL
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ sql })
     });
-    // Handle errors like before
     const data = await response.json();
     return data;
   } catch (error) {
-    // Handle error
+    console.error("Erro em executeQuery:", error);
+    toast.add({
+      severity: "error",
+      summary: "Erro",
+      detail: String(error),
+      life: 5000
+    });
+    return null;
   }
 }
-
 async function executeQueryRun(username, sql) {
   // Added username
   try {
@@ -333,30 +321,56 @@ async function executeQueryRun(username, sql) {
     // Handle error
   }
 }
+async function executeQueryRun_(username, sql, params = []) {
+  try {
+    const response = await fetch(`/api/${username}/queryRun`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ sql, params })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data.error || `Erro ao executar consulta: ${response.status}`
+      );
+    }
+    return data;
+  } catch (error) {
+    console.error("Erro em executeQueryRun:", error);
+    toast.add({
+      severity: "error",
+      summary: "Erro",
+      detail: String(error),
+      life: 5000
+    });
+    return null;
+  }
+}
 
 async function fetchData() {
-  // const route = useRoute();
-  // const username = route.params.username;
-  
-  console.log("Fetched dataRoles:", dataRoles.map(x=> x.name));
-  // data_roles.value = dataRoles.name;
-  // console.log("Fetched data_roles:", data_roles);
-
-  const data = await executeQuery(username, `
-  SELECT
-      pr.id,
-      p.page as page_name,
-      pr.page_id,
-      GROUP_CONCAT(r.name, ', ') AS roles_names,
-      GROUP_CONCAT(pr.role_id) AS roles_ids
-    FROM page_roles pr
-    LEFT JOIN pages p ON pr.page_id = p.id
-    LEFT JOIN roles r ON pr.role_id = r.id
-    GROUP BY p.page, pr.page_id  `);
+  const data = await executeQuery(
+    username,
+    `
+      SELECT
+        p.id,
+        p.page,
+        GROUP_CONCAT(r.name, ', ') AS roles_names,
+        GROUP_CONCAT(pr.role_id, ', ') AS roles_ids
+    FROM
+        pages p
+    LEFT JOIN
+        page_roles pr ON p.id = pr.page_id
+    LEFT JOIN
+        roles r ON pr.role_id = r.id
+    GROUP BY
+        p.page;
+    `
+  );
 
   console.log("Fetched data:", data);
-
-  return data;
+  items.value = data;
 }
 
 function openNew() {
@@ -371,58 +385,58 @@ function hideDialog() {
 }
 
 async function saveItem() {
+
+  console.log("saveItem()")
   submitted.value = true;
 
   let isValid = true;
   for (const col of columns.value) {
-    if (col.editTemplate && !item.value[col.field] && col.field !== 'roles') {
+    if (col.editTemplate && !item.value[col.field] && col.field !== 'roles_names') {
       isValid = false;
       break;
     }
   }
 
+  console.log("isValid:", isValid)
   if (isValid) {
     try {
       const userData = {
         id: item.value.id,
-        nome: item.value.nome,
-        email: item.value.email,
-        telefone: item.value.telefone,
-        password: item.value.password,
-        status: item.value.status,
+        page: item.value.page,
       };
-
-      // 1. Salvar/atualizar os dados básicos do usuário na tabela 'users'
-      const userResponse = await $fetch(`/api/${username}/upsert`, {
+      console.log("userData:", userData)
+      // 1. Salvar/atualizar os dados básicos da página na tabela 'pages'
+      const pageResponse = await $fetch(`/api/${username}/upsert`, {
         method: "POST",
         body: {
-          table: "page_roles", // Substitua pelo nome da sua tabela
+          table: "pages",
           data: userData,
           condition: item.value.id ? `id = ${item.value.id}` : null,
         },
       });
 
-      let userId;
+      let pageId;
       if (item.value.id) {
-        userId = item.value.id;
-        if (!userResponse?.message && userResponse !== null) {
+        pageId = item.value.id;
+        console.log("pageId:", pageId);
+        if (!pageResponse?.message && pageResponse !== null) {
           toast.add({
             severity: "error",
             summary: "Error",
-            detail: "Failed to update user data",
+            detail: "Falha ao atualizar a página.",
             life: 3000,
           });
           return;
         }
       } else {
-        if (userResponse?.insertId) {
-          userId = userResponse.insertId;
-          userData.id = userId; // Adicionar o ID ao userData para inserção
+        if (pageResponse?.insertId) {
+          pageId = pageResponse.insertId;
+          userData.id = pageId; // Adicionar o ID ao userData para inserção
         } else {
           toast.add({
             severity: "error",
             summary: "Error",
-            detail: "Failed to create new user",
+            detail: "Falha ao criar nova página.",
             life: 3000,
           });
           return;
@@ -430,23 +444,46 @@ async function saveItem() {
       }
 
       const selectedRoleIds = item.value.roles_ids || [];
+      console.log("selectedRoleIds:", selectedRoleIds);
+      // 2. Atualizar a tabela 'page_roles'
+      if (pageId) {
+        // Remover roles existentes para a página
+        try {
+          // await executeQueryRun(username, 'DELETE FROM page_roles WHERE page_id = ?', [pageId]);
+          await executeQueryRun(username, `DELETE FROM page_roles WHERE page_id = ${pageId}`);
 
-      // 2. Atualizar a tabela 'user_roles'
-      if (userId) {
-        await executeQueryRun(username, `DELETE FROM user_roles WHERE user_id = ${userId}`);
+        } catch (error) {
+          console.error("Erro ao deletar roles:", error);
+          toast.add({ severity: 'error', summary: 'Erro', detail: `Erro ao deletar roles: ${error.message}`, life: 5000 });
+          return; // Pare a execução se houver um erro
+        }
 
+        // Inserir os novos roles selecionados
         if (selectedRoleIds.length > 0) {
-          const insertPromises = selectedRoleIds.map((roleId) =>
-            executeQueryRun(username, `INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId})`)
-          );
-          await Promise.all(insertPromises);
+          const insertPromises = selectedRoleIds.map(roleId => {
+            try {
+              return executeQueryRun(username, `INSERT INTO page_roles (page_id, role_id) VALUES (${pageId}, ${roleId})`)
+ 
+           
+            } catch (error) {
+              console.error("Erro ao inserir role:", error);
+              toast.add({ severity: 'error', summary: 'Erro', detail: `Erro ao inserir role: ${error.message}`, life: 5000 });
+              return Promise.reject(error); // Rejeite a promessa para parar o Promise.all
+            }
+          });
+          try {
+            await Promise.all(insertPromises);
+          } catch (error) {
+            console.error("Erro em Promise.all:", error);
+            return; // Pare a execução se houver um erro
+          }
         }
       }
 
       toast.add({
         severity: "success",
-        summary: "Successful",
-        detail: "Item Saved",
+        summary: "Sucesso",
+        detail: "Página Salva",
         life: 3000,
       });
 
@@ -458,37 +495,29 @@ async function saveItem() {
         // Atualizar registro existente
         const index = items.value.findIndex((val) => val.id === item.value.id);
         if (index !== -1) {
-          items.value[index] = { ...userData, roles_ids: selectedRoleIds, roles_names: item.value.roles_names }; // Use userData para atualizar
+          items.value[index] = { ...userData, roles_ids: selectedRoleIds, roles_names: item.value.roles_names };
         }
       } else {
         // Adicionar novo registro
-        items.value.push({ ...userData, roles_ids: selectedRoleIds, roles_names: item.value.roles_names }); // Use userData para inserir
+        items.value.push({ ...userData, roles_ids: selectedRoleIds, roles_names: item.value.roles_names });
       }
 
-      const data = await fetchData();
-      items.value = data; // Recarregar os dados para exibir as alterações
+      await fetchData();
+      // items.value = data; // Recarregar os dados
     } catch (error) {
-      console.error("Error saving item:", error);
+      console.error("Erro ao salvar a página:", error);
       toast.add({
         severity: "error",
         summary: "Error",
-        detail: "An error occurred while saving the item.",
+        detail: "Erro ao salvar a página.",
         life: 3000,
       });
     }
   }
 }
+
 function editItem(selectedItem) {
   item.value = { ...selectedItem };
-  // Certifique-se de que roles_ids esteja presente, mesmo que seja um array vazio
-  if (!item.value.roles_ids) {
-    item.value.roles_ids = [];
-  } else {
-    // Se roles_ids for uma string, converta para array (se necessário)
-    if (typeof item.value.roles_ids === 'string') {
-      item.value.roles_ids = item.value.roles_ids.split(',').map(Number); // Converter string para array de números
-    }
-  }
   itemDialog.value = true;
 }
 
@@ -502,18 +531,15 @@ async function deleteItem() {
     const response = await $fetch(`/api/${username}/delete`, {
       method: "POST",
       body: {
-        table: "page_roles", // Substitua pelo nome da sua tabela
+        table: "pages",
         condition: `id = ${item.value.id}`
       }
     });
 
     if (response && response.message) {
-      // Excluiu com sucesso no banco de dados
-      // Se necessário, atualize a lista localmente ou busque os dados novamente
-      // items.value = items.value.filter((val) => val.id !== item.value.id); //Remova esta linha se voce for buscar os dados novamente.
       toast.add({
         severity: "success",
-        summary: "Successful",
+        summary: "Sucesso",
         detail: response.message,
         life: 3000
       });
@@ -521,19 +547,20 @@ async function deleteItem() {
       toast.add({
         severity: "error",
         summary: "Error",
-        detail: "Failed to delete item",
+        detail: "Falha ao excluir a página.",
         life: 3000
       });
     }
 
     deleteItemDialog.value = false;
     item.value = {};
+    fetchData();
   } catch (error) {
-    console.error("Error deleting item:", error);
+    console.error("Erro ao excluir a página:", error);
     toast.add({
       severity: "error",
       summary: "Error",
-      detail: "An error occurred while deleting the item.",
+      detail: "Erro ao excluir a página.",
       life: 3000
     });
   }
@@ -544,7 +571,6 @@ function findIndexById(id) {
 }
 
 function createId() {
-  // Replace with your actual ID generation logic (e.g., UUID)
   let id = "";
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -568,8 +594,8 @@ function deleteSelectedItems() {
   selectedItems.value = null;
   toast.add({
     severity: "success",
-    summary: "Successful",
-    detail: "Items Deleted",
+    summary: "Sucesso",
+    detail: "Páginas Excluídas",
     life: 3000
   });
 }
@@ -582,5 +608,4 @@ function formatCurrency(value) {
     });
   return;
 }
-
 </script>

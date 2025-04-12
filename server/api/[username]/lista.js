@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineEventHandler((event) => {
   const username = event.context.params.username;
-  const dbPath = path.resolve(`./data/${username}.db`);
+  const dbPath = path.resolve(`./server/data/${username}.db`);
 
   try {
     const db = new Database(dbPath, { readonly: true });

@@ -22,11 +22,11 @@ export default defineEventHandler((event) => {
     console.log('url-------------:>', url);
     console.log('domain-------------:>', domain);
 
-    // if (!fs.existsSync(path.resolve(`./data/${domain}.db`))) {
+    // if (!fs.existsSync(path.resolve(`./server/data/${domain}.db`))) {
     //     return sendError(event, createError({ statusCode: 401, statusMessage: `${url} - Domínio não encontrado` }));
     // }
 
-    // const dbPath = path.resolve(`./data/${domain}.db`);
+    // const dbPath = path.resolve(`./server/data/${domain}.db`);
     // const db = new Database(dbPath);
 
     if (checkStringPattern(url, ['/', '/login', '/logout', '/user'])) {

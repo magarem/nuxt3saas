@@ -29,7 +29,10 @@ export default defineEventHandler(async (event) => {
     const dbPath = path.resolve(`./server/data/${username}.db`);
 
     const db = new Database(dbPath); // Open in readonly mode for safety (consider changing this if you need write operations)
-    const result = db.prepare(sql).all();
+    // const result = db.prepare(sql).all();
+    const stmt = db.prepare(sql);
+    const result = stmt.run();
+
     console.log('SQL query result:', result);
     
     db.close();

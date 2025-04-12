@@ -4,15 +4,15 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
 
    console.log('Auth check middleware triggered');
-   console.log('To route:', to);
-   console.log('From route:', from);
+//    console.log('To route:', to);
+//    console.log('From route:', from);
 
    if (to.path.endsWith('/auth/login') || to.path.endsWith('/forbidden') || to.path.endsWith('/dashboard')) {
     console.log('acesso a páginas base:', to);
     return
    }
 
-   console.log('acesso a página comum:', to);
+//    console.log('acesso a página comum:', to);
 
    let a = to.path.split('/')
    if (a.length > 0){

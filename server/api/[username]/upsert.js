@@ -10,8 +10,13 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event);
   const { table, data, condition } = body;
 
+
+  console.log('body', body);
+  console.log('table', table);
+  console.log('data', data);
+  console.log('condition', condition);
   const username = event.context.params.username;
-  const dbPath = path.resolve(`./data/${username}.db`);
+  const dbPath = path.resolve(`./server/data/${username}.db`);
 
   const db = new Database(dbPath); // Open in readonly mode for safety (consider changing this if you need write operations)
     
@@ -24,15 +29,40 @@ export default defineEventHandler(async (event) => {
   }
 
   const keys = Object.keys(data);
-  const values = Object.values(data);
+  // const values = Object.values(data);
+  const values = keys.map((key) => {
+    const value = data[key];
+    if (Array.isArray(value)) {
+      return JSON.stringify(value); // Serialize arrays
+    }
+    return value;
+  });
+
+  // const values_to_zero = keys.map((key) => {
+  //   const value = data[key];
+  //   if (Array.isArray(value)) {
+  //     return ''; // Serialize arrays
+  //   }
+  //   return value;
+  // });
   const placeholders = keys.map(() => '?').join(', ');
 
   try {
     if (condition) {
       // Upsert: tente atualizar, senão insira
+      // const setClause = keys.map((key) => `${key} = ?`).join(', ');
+      // console.log(`UPDATE ${table} SET ${setClause} WHERE ${condition}`);
+      // console.log('[...values_to_zero]', [...values_to_zero]);
+      // const updateStmt = db.prepare(`UPDATE ${table} SET ${setClause} WHERE ${condition}`);
+      // const updateResult = updateStmt.run([...values_to_zero]);
+
+
       const setClause = keys.map((key) => `${key} = ?`).join(', ');
+      console.log(`UPDATE ${table} SET ${setClause} WHERE ${condition}`);
+      console.log([...values]);
       const updateStmt = db.prepare(`UPDATE ${table} SET ${setClause} WHERE ${condition}`);
       const updateResult = updateStmt.run([...values]);
+
 
       if (updateResult.changes === 0) {
         // Nenhuma linha foi atualizada, então insira

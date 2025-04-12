@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 
   if (!authToken) {
     // throw createError({statusCode: 401, statusMessage: "Unauthorized"});
-    return {statusCode: 401, statusMessage: "Unauthorized"};
+    return {statusCode: 401, statusMessage: "Unauthorized22"};
   }
 
   const decoded = jwt.verify(authToken, "chave_secreta");
