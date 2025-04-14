@@ -59,3 +59,33 @@ Este projeto é um template inicial para aplicações SaaS (Software as a Servic
     ```
 
 2.  Acesse a aplicação no seu navegador: `http://localhost:3000`
+
+## Estrutura de Pastas
+
+A estrutura de pastas do projeto segue uma organização que facilita a manutenção e escalabilidade do código. Abaixo, uma breve descrição dos diretórios mais importantes:
+
+```
+.
+├── assets         # Arquivos estáticos, como estilos, imagens e fontes.
+├── components     # Componentes Vue reutilizáveis para construir a interface.
+├── composables    # Funções e hooks reutilizáveis em diferentes partes do projeto.
+├── layouts        # Layouts base para estruturar as páginas da aplicação.
+├── middleware     # Funções que interceptam requisições, úteis para autenticação e outras lógicas.
+├── pages          # Páginas da aplicação que correspondem às rotas do Nuxt.
+├── public         # Arquivos públicos que são servidos diretamente.
+├── server         # Código do lado do servidor, como APIs e middlewares.
+└── stores         # Gerenciamento de estado, usado por exemplo com Pinia ou Vuex.
+```
+
+Cada diretório possui uma finalidade específica para tornar o desenvolvimento mais modular e organizado.
+
+## Jornadas
+
+Este template foi desenvolvido pensando em diferentes jornadas dos usuários que utilizam a aplicação SaaS. As principais jornadas são:
+
+- **Jornada do Usuário:** Inclui a criação de conta, processo de onboarding, e acesso ao dashboard com informações personalizadas.
+- **Jornada do Administrador:** Foca no gerenciamento de usuários, monitoramento de métricas e administração geral do sistema.
+- **Jornada de Suporte:** Facilita o acesso a suporte e orientações para resolução de problemas e dúvidas comuns.
+- **Jornada de Escalonamento:** Permite ao usuário realizar upgrades ou downgrades dos planos de assinatura, ajustando as funcionalidades conforme sua necessidade.
+
+Cada jornada foi projetada para otimizar a experiência do usuário e fornecer acesso rápido às funcionalidades essenciais da plataforma.
