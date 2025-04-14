@@ -2,8 +2,6 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 
-
-
 export default defineEventHandler(async (event) => {
 
 
@@ -74,6 +72,9 @@ export default defineEventHandler(async (event) => {
       return { message: 'Row updated', result: updateResult };
     } else {
       // Inserir diretamente (sem condição)
+      console.log(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`);
+      console.log([...values]);
+      
       const insertStmt = db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`);
       const insertResult = insertStmt.run([...values]);
       return { message: 'Row inserted', result: insertResult };

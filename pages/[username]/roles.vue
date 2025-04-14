@@ -364,6 +364,9 @@ async function deleteItem() {
       // Excluiu com sucesso no banco de dados
       // Se necessário, atualize a lista localmente ou busque os dados novamente
       // items.value = items.value.filter((val) => val.id !== item.value.id); //Remova esta linha se voce for buscar os dados novamente.
+       // Atualize a lista localmente
+       items.value = items.value.filter(val => val.id !== item.value.id);
+
       toast.add({
         severity: "success",
         summary: "Successful",

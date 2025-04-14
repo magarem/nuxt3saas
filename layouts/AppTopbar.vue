@@ -24,6 +24,13 @@ const items = ref([
         label: ret.value.user?.username,
         items: [
             {
+                label: 'Profile',
+                icon: 'pi pi-sign-out',
+                command: () => {
+                    logout();
+                }
+            },
+            {
                 label: 'Sair',
                 icon: 'pi pi-sign-out',
                 command: () => {

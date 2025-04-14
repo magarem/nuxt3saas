@@ -385,8 +385,6 @@ function hideDialog() {
 }
 
 async function saveItem() {
-
-  console.log("saveItem()")
   submitted.value = true;
 
   let isValid = true;
@@ -397,28 +395,33 @@ async function saveItem() {
     }
   }
 
-  console.log("isValid:", isValid)
   if (isValid) {
     try {
-      const userData = {
-        id: item.value.id,
+      const pageData = {
         page: item.value.page,
       };
-      console.log("userData:", userData)
-      // 1. Salvar/atualizar os dados básicos da página na tabela 'pages'
-      const pageResponse = await $fetch(`/api/${username}/upsert`, {
-        method: "POST",
-        body: {
-          table: "pages",
-          data: userData,
-          condition: item.value.id ? `id = ${item.value.id}` : null,
-        },
-      });
+
+      // 1. Salvar/atualizar a página na tabela 'pages'
+      let pageResponse;
+      try {
+        pageResponse = await $fetch(`/api/${username}/upsert`, {
+          method: "POST",
+          body: {
+            table: "pages",
+            data: pageData,
+            condition: item.value.id ? `id = ${item.value.id}` : null,
+          },
+        });
+        console.log("pageResponse?.result?.lastInsertRowid:", pageResponse?.result.lastInsertRowid);
+      } catch (error) {
+        console.error("Erro ao salvar/atualizar página:", error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: `Erro ao salvar/atualizar página: ${error.message}`, life: 5000 });
+        return; // Pare a execução em caso de erro na chamada à API
+      }
 
       let pageId;
       if (item.value.id) {
         pageId = item.value.id;
-        console.log("pageId:", pageId);
         if (!pageResponse?.message && pageResponse !== null) {
           toast.add({
             severity: "error",
@@ -428,43 +431,37 @@ async function saveItem() {
           });
           return;
         }
+      } else if (pageResponse?.result?.lastInsertRowid) {
+        pageId = pageResponse.result?.lastInsertRowid;
+        pageData.id = pageId;
       } else {
-        if (pageResponse?.insertId) {
-          pageId = pageResponse.insertId;
-          userData.id = pageId; // Adicionar o ID ao userData para inserção
-        } else {
-          toast.add({
-            severity: "error",
-            summary: "Error",
-            detail: "Falha ao criar nova página.",
-            life: 3000,
-          });
-          return;
-        }
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Falha ao criar nova página.",
+          life: 3000,
+        });
+        return;
       }
 
       const selectedRoleIds = item.value.roles_ids || [];
-      console.log("selectedRoleIds:", selectedRoleIds);
+
       // 2. Atualizar a tabela 'page_roles'
       if (pageId) {
         // Remover roles existentes para a página
         try {
-          // await executeQueryRun(username, 'DELETE FROM page_roles WHERE page_id = ?', [pageId]);
-          await executeQueryRun(username, `DELETE FROM page_roles WHERE page_id = ${pageId}`);
-
+          await executeQueryRun(username, 'DELETE FROM page_roles WHERE page_id = ' + pageId);
         } catch (error) {
           console.error("Erro ao deletar roles:", error);
           toast.add({ severity: 'error', summary: 'Erro', detail: `Erro ao deletar roles: ${error.message}`, life: 5000 });
-          return; // Pare a execução se houver um erro
+          return;
         }
 
         // Inserir os novos roles selecionados
         if (selectedRoleIds.length > 0) {
           const insertPromises = selectedRoleIds.map(roleId => {
             try {
-              return executeQueryRun(username, `INSERT INTO page_roles (page_id, role_id) VALUES (${pageId}, ${roleId})`)
- 
-           
+              return executeQueryRun(username, 'INSERT INTO page_roles (page_id, role_id) VALUES ('+pageId+', '+roleId+')');
             } catch (error) {
               console.error("Erro ao inserir role:", error);
               toast.add({ severity: 'error', summary: 'Erro', detail: `Erro ao inserir role: ${error.message}`, life: 5000 });
@@ -475,7 +472,7 @@ async function saveItem() {
             await Promise.all(insertPromises);
           } catch (error) {
             console.error("Erro em Promise.all:", error);
-            return; // Pare a execução se houver um erro
+            return;
           }
         }
       }
@@ -490,20 +487,7 @@ async function saveItem() {
       itemDialog.value = false;
       item.value = {};
 
-      // 3. Atualizar a lista localmente
-      if (item.value.id) {
-        // Atualizar registro existente
-        const index = items.value.findIndex((val) => val.id === item.value.id);
-        if (index !== -1) {
-          items.value[index] = { ...userData, roles_ids: selectedRoleIds, roles_names: item.value.roles_names };
-        }
-      } else {
-        // Adicionar novo registro
-        items.value.push({ ...userData, roles_ids: selectedRoleIds, roles_names: item.value.roles_names });
-      }
-
       await fetchData();
-      // items.value = data; // Recarregar os dados
     } catch (error) {
       console.error("Erro ao salvar a página:", error);
       toast.add({
@@ -537,6 +521,9 @@ async function deleteItem() {
     });
 
     if (response && response.message) {
+        // Atualize a lista localmente
+        items.value = items.value.filter(val => val.id !== item.value.id);
+
       toast.add({
         severity: "success",
         summary: "Sucesso",
