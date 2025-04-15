@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import {H3Event, createError, setCookie, readBody} from "h3";
 import Database from "better-sqlite3";
 import path from "path";
-import {timeStamp} from "console";
 
 const SECRET_KEY = "chave_secreta";
 

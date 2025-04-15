@@ -25,9 +25,9 @@ const items = ref([
         items: [
             {
                 label: 'Profile',
-                icon: 'pi pi-sign-out',
+                icon: 'pi pi-user-edit',
                 command: () => {
-                    logout();
+                    profileEdit();
                 }
             },
             {
@@ -48,6 +48,10 @@ const items = ref([
 const toggle = (event) => {
     menu.value.toggle(event);
 };
+
+const profileEdit = async () => {
+  navigateTo('/' + username + '/profile')
+}
 
 const logout = async () => {
   await $fetch('/api/' + username + '/logout')

@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
         return { message: 'Row inserted', result: insertResult };
       }
 
-      return { message: 'Row updated', result: updateResult };
+      return { success: true, message: 'Row updated', result: updateResult };
     } else {
       // Inserir diretamente (sem condição)
       console.log(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`);
