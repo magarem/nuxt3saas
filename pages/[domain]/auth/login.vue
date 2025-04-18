@@ -11,11 +11,11 @@ const password = ref('12345');
 const checked = ref(false);
 const error = ref('');
 const route = useRoute();
-const account_username = route.params.username;
+const domain = route.params.domain;
 
 const login = async () => {
     try {
-      const response = await $fetch(`/api/${account_username}/login`, {
+      const response = await $fetch(`/api/${domain}/login`, {
         method: 'POST',
         body: { username: username.value, password: password.value },
       });
@@ -25,10 +25,10 @@ const login = async () => {
       if (response.success) {
         // Armazena o token JWT (por exemplo, em localStorage)
         // localStorage.setItem('token', response.token);
-        console.log('/'+account_username+'/');
+        console.log('/'+domain+'/');
   
         // Redireciona para a página protegida
-        navigateTo({path:'/'+account_username+'/dashboard'});
+        navigateTo({path:'/'+domain+'/dashboard'});
       } else {
         error.value = response;
       }

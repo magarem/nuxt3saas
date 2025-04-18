@@ -3,7 +3,6 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { defineEventHandler, readBody, getRouterParams, setResponseStatus, getCookie, sendRedirect, createError, sendError } from 'h3'; // Importações corretas
-import { Console } from 'console';
 
 function ensureArray(value) {
   if (Array.isArray(value)) {
@@ -14,7 +13,7 @@ function ensureArray(value) {
 }
 
 export default defineEventHandler(async (event) => {
-  const { username: domain, page } = getRouterParams(event); // Use desestruturação para clareza
+  const { domain, page } = getRouterParams(event); // Use desestruturação para clareza
   const dbPath = path.resolve(`./server/data/${domain}.db`);
 
   if (!fs.existsSync(dbPath)) {
@@ -49,7 +48,7 @@ export default defineEventHandler(async (event) => {
     const userRoles = decoded.roles?.replace(/\s+/g, '').split(',');
     console.log('User roles:', userRoles);
 
-    if (!userRoles.some(role => pageRolesArray.includes(role))) {
+    if (!userRoles?.some(role => pageRolesArray.includes(role))) {
       return { success: false, statusCode: 404, statusMessage: `Acesso negado` };
     }
 

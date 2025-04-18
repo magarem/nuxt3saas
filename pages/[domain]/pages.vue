@@ -226,10 +226,10 @@ const filters = ref({
 });
 const submitted = ref(false);
 const route = useRoute();
-const username = route.params.username;
+const domain = route.params.domain;
 
 let data_roles = ref([]);
-const dataRoles = await executeQuery(username, "SELECT id, name FROM roles");
+const dataRoles = await executeQuery(domain, "SELECT id, name FROM roles");
 data_roles.value = dataRoles?.map(x => ({ key: x.id, value: x.name }));
 console.log("Fetched dataRoles----+:", data_roles.value);
 
@@ -281,9 +281,9 @@ function formatValue(value) {
   return value;
 }
 
-async function executeQuery(username, sql) {
+async function executeQuery(domain, sql) {
   try {
-    const response = await fetch(`/api/${username}/query`, {
+    const response = await fetch(`/api/${domain}/query`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -303,10 +303,10 @@ async function executeQuery(username, sql) {
     return null;
   }
 }
-async function executeQueryRun(username, sql) {
-  // Added username
+async function executeQueryRun(domain, sql) {
+  // Added domain
   try {
-    const response = await fetch(`/api/${username}/queryRun`, {
+    const response = await fetch(`/api/${domain}/queryRun`, {
       // Changed URL
       method: "POST",
       headers: {
@@ -321,9 +321,9 @@ async function executeQueryRun(username, sql) {
     // Handle error
   }
 }
-async function executeQueryRun_(username, sql, params = []) {
+async function executeQueryRun_(domain, sql, params = []) {
   try {
-    const response = await fetch(`/api/${username}/queryRun`, {
+    const response = await fetch(`/api/${domain}/queryRun`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -351,7 +351,7 @@ async function executeQueryRun_(username, sql, params = []) {
 
 async function fetchData() {
   const data = await executeQuery(
-    username,
+    domain,
     `
       SELECT
         p.id,
@@ -404,7 +404,7 @@ async function saveItem() {
       // 1. Salvar/atualizar a página na tabela 'pages'
       let pageResponse;
       try {
-        pageResponse = await $fetch(`/api/${username}/upsert`, {
+        pageResponse = await $fetch(`/api/${domain}/upsert`, {
           method: "POST",
           body: {
             table: "pages",
@@ -450,7 +450,7 @@ async function saveItem() {
       if (pageId) {
         // Remover roles existentes para a página
         try {
-          await executeQueryRun(username, 'DELETE FROM page_roles WHERE page_id = ' + pageId);
+          await executeQueryRun(domain, 'DELETE FROM page_roles WHERE page_id = ' + pageId);
         } catch (error) {
           console.error("Erro ao deletar roles:", error);
           toast.add({ severity: 'error', summary: 'Erro', detail: `Erro ao deletar roles: ${error.message}`, life: 5000 });
@@ -461,7 +461,7 @@ async function saveItem() {
         if (selectedRoleIds.length > 0) {
           const insertPromises = selectedRoleIds.map(roleId => {
             try {
-              return executeQueryRun(username, 'INSERT INTO page_roles (page_id, role_id) VALUES ('+pageId+', '+roleId+')');
+              return executeQueryRun(domain, 'INSERT INTO page_roles (page_id, role_id) VALUES ('+pageId+', '+roleId+')');
             } catch (error) {
               console.error("Erro ao inserir role:", error);
               toast.add({ severity: 'error', summary: 'Erro', detail: `Erro ao inserir role: ${error.message}`, life: 5000 });
@@ -512,7 +512,7 @@ function confirmDeleteItem(selectedItem) {
 
 async function deleteItem() {
   try {
-    const response = await $fetch(`/api/${username}/delete`, {
+    const response = await $fetch(`/api/${domain}/delete`, {
       method: "POST",
       body: {
         table: "pages",

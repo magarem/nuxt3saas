@@ -1,13 +1,13 @@
-// server/api/[username]/queryRun.post.ts
+// server/api/[domain]/queryRun.post.ts
 import { defineEventHandler, readBody, getRouterParams, setResponseStatus } from 'h3';
 import Database from 'better-sqlite3'; // Importe better-sqlite3
 
 export default defineEventHandler(async (event) => {
-  const { username } = getRouterParams(event);
+  const { domain } = getRouterParams(event);
   const { sql, params } = await readBody(event);
-  const dbPath = `./server/data/${username}.db`; // Ajuste o caminho do seu banco
+  const dbPath = `./server/data/${domain}.db`; // Ajuste o caminho do seu banco
   let db;
-  console.log('username, sql, params:', username, sql, params);
+  console.log('domain, sql, params:', domain, sql, params);
 
   try {
     db = new Database(dbPath); // Abra a conexão com better-sqlite3 (síncrono)
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     return { message: 'Comando executado com sucesso' }; // Adapte a resposta
 
   } catch (err) {
-    console.error("Erro na rota /api/:username/queryRun:", err);
+    console.error("Erro na rota /api/:domain/queryRun:", err);
     setResponseStatus(event, 500);
     return { error: err.message };
   } finally {

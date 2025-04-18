@@ -218,9 +218,9 @@ const filters = ref({
 });
 const submitted = ref(false);
 const route = useRoute();
-const username = route.params.username;
+const domain = route.params.domain;
 let data_roles = ref([]);
-const dataRoles = await executeQuery(username, "SELECT id, name FROM roles");
+const dataRoles = await executeQuery(domain, "SELECT id, name FROM roles");
 data_roles.value = dataRoles?.map(x => ({key: x.id, value: x.name}));
 console.log("Fetched dataRoles----+:", data_roles.value);
 
@@ -297,10 +297,10 @@ function formatValue(value) {
   return value 
 }
 
-async function executeQuery(username, sql) {
-  // Added username
+async function executeQuery(domain, sql) {
+  // Added domain
   try {
-    const response = await fetch(`/api/${username}/query`, {
+    const response = await fetch(`/api/${domain}/query`, {
       // Changed URL
       method: "POST",
       headers: {
@@ -316,10 +316,10 @@ async function executeQuery(username, sql) {
   }
 }
 
-async function executeQueryRun(username, sql) {
-  // Added username
+async function executeQueryRun(domain, sql) {
+  // Added domain
   try {
-    const response = await fetch(`/api/${username}/queryRun`, {
+    const response = await fetch(`/api/${domain}/queryRun`, {
       // Changed URL
       method: "POST",
       headers: {
@@ -337,13 +337,13 @@ async function executeQueryRun(username, sql) {
 
 async function fetchData() {
   // const route = useRoute();
-  // const username = route.params.username;
+  // const domain = route.params.domain;
   
   console.log("Fetched dataRoles:", dataRoles.map(x=> x.name));
   // data_roles.value = dataRoles.name;
   // console.log("Fetched data_roles:", data_roles);
 
-  const data = await executeQuery(username, `
+  const data = await executeQuery(domain, `
   SELECT
       u.id,
       u.nome,
@@ -398,7 +398,7 @@ async function saveItem() {
       };
 
       // 1. Salvar/atualizar os dados básicos do usuário na tabela 'users'
-      const userResponse = await $fetch(`/api/${username}/upsert`, {
+      const userResponse = await $fetch(`/api/${domain}/upsert`, {
         method: "POST",
         body: {
           table: "users",
@@ -438,11 +438,11 @@ async function saveItem() {
 
       // 2. Atualizar a tabela 'user_roles'
       if (userId) {
-        await executeQueryRun(username, `DELETE FROM user_roles WHERE user_id = ${userId}`);
+        await executeQueryRun(domain, `DELETE FROM user_roles WHERE user_id = ${userId}`);
 
         if (selectedRoleIds.length > 0) {
           const insertPromises = selectedRoleIds.map((roleId) =>
-            executeQueryRun(username, `INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId})`)
+            executeQueryRun(domain, `INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId})`)
           );
           await Promise.all(insertPromises);
         }
@@ -504,7 +504,7 @@ function confirmDeleteItem(selectedItem) {
 
 async function deleteItem() {
   try {
-    const response = await $fetch(`/api/${username}/delete`, {
+    const response = await $fetch(`/api/${domain}/delete`, {
       method: "POST",
       body: {
         table: "users", // Substitua pelo nome da sua tabela

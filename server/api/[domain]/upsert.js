@@ -13,8 +13,8 @@ export default defineEventHandler(async (event) => {
   console.log('table', table);
   console.log('data', data);
   console.log('condition', condition);
-  const username = event.context.params.username;
-  const dbPath = path.resolve(`./server/data/${username}.db`);
+  const domain = event.context.params.domain;
+  const dbPath = path.resolve(`./server/data/${domain}.db`);
 
   const db = new Database(dbPath); // Open in readonly mode for safety (consider changing this if you need write operations)
     

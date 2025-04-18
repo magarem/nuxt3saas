@@ -12,7 +12,7 @@ function getUsernameFromHref(href) {
 const route = useRoute();
 const username = getUsernameFromHref(route.fullPath||'');
 console.log('username>>>>:', username);
-const { data: ret } = await useFetch('/api/' + username + '/user');
+const { data: ret } = await useFetch('/api/~/user');
 console.log('ret>>>>:::', ret.value);
 if (!ret.value?.user) {
     // Redireciona para a página de login

@@ -3,7 +3,7 @@ import { ref } from "vue";
 
 import AppMenuItem from "./AppMenuItem.vue";
 
-function getUsernameFromHref(href) {
+function getdomainFromHref(href) {
   const match = href.split("/")[1];
   if (match) {
     return match;
@@ -11,7 +11,7 @@ function getUsernameFromHref(href) {
   return null;
 }
 
-// function getUsernameFromPath(fullPath) {
+// function getdomainFromPath(fullPath) {
 //   const atIndex = fullPath.indexOf('/@');
 //   if (atIndex === -1) {
 //     return null; // ou '', dependendo do que você quer retornar se não encontrar
@@ -29,8 +29,8 @@ function getUsernameFromHref(href) {
 //
 
 const route = useRoute();
-const username = getUsernameFromHref(route.fullPath || "");
-console.log("username>>>>:", username);
+const domain = getdomainFromHref(route.fullPath || "");
+console.log("domain>>>>:", domain);
 console.log("route.fullPath>>>>:", route.fullPath);
 console.log("location.href:", location?.href);
 
@@ -41,12 +41,12 @@ const model = ref([
       {
         label: "Dashboard",
         icon: "pi pi-fw pi-home",
-        to: "/" + username + "/dashboard"
+        to: "/" + domain + "/dashboard"
       },
       {
         label: "Teste",
         icon: "pi pi-fw pi-id-card",
-        to: "/" + username + "/teste"
+        to: "/" + domain + "/teste"
       },
       {
         label: "Auth",
@@ -55,19 +55,19 @@ const model = ref([
           {
             label: "Usuários",
             icon: "pi pi-fw pi-id-card",
-            to: "/" + username + "/users"
+            to: "/" + domain + "/users"
           },
           {
             label: "Categoria do usuário",
             icon: "pi pi-fw pi-id-card",
-            to: "/" + username + "/roles"
+            to: "/" + domain + "/roles"
           },
           {
             label: "Páginas",
             icon: "pi pi-fw pi-id-card",
-            to: "/" + username + "/pages"
+            to: "/" + domain + "/pages"
           }
-          // { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: '/'+username + '/lista' }
+          // { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: '/'+domain + '/lista' }
         ]
       }
     ]

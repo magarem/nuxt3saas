@@ -210,7 +210,7 @@ const filters = ref({
 });
 const submitted = ref(false);
 const route = useRoute();
-const username = route.params.username;
+const domain = route.params.domain;
 const columns = ref([
   { field: "id", header: "ID", sortable: true, style: { "min-width": "8rem" } },
   {
@@ -232,15 +232,15 @@ const columns = ref([
 onMounted(async () => {
   // Replace with your data fetching logic
 
-  // const { data: users } = await useFetch(`/api/${username}/lista`);
+  // const { data: users } = await useFetch(`/api/${domain}/lista`);
   const data = await fetchData();
   items.value = data;
 });
 
-async function executeQuery(username, sql) {
-  // Added username
+async function executeQuery(domain, sql) {
+  // Added domain
   try {
-    const response = await fetch(`/api/${username}/query`, {
+    const response = await fetch(`/api/${domain}/query`, {
       // Changed URL
       method: "POST",
       headers: {
@@ -258,9 +258,9 @@ async function executeQuery(username, sql) {
 
 async function fetchData() {
   // const route = useRoute();
-  // const username = route.params.username;
+  // const domain = route.params.domain;
   const data = await executeQuery(
-    username,
+    domain,
     "SELECT * FROM roles"
   );
   return data;
@@ -297,7 +297,7 @@ async function saveItem() {
 
   if (isValid) {
     try {
-      const response = await $fetch(`/api/${username}/upsert`, {
+      const response = await $fetch(`/api/${domain}/upsert`, {
         method: "POST",
         body: {
           table: "roles", // Substitua pelo nome da sua tabela
@@ -352,7 +352,7 @@ function confirmDeleteItem(selectedItem) {
 
 async function deleteItem() {
   try {
-    const response = await $fetch(`/api/${username}/delete`, {
+    const response = await $fetch(`/api/${domain}/delete`, {
       method: "POST",
       body: {
         table: "roles", // Substitua pelo nome da sua tabela

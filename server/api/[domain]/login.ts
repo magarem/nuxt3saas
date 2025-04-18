@@ -42,7 +42,7 @@ function verificarLoginPorNome(db, nomeDigitado, senhaDigitada) {
 export default defineEventHandler(async (event : H3Event) => {
 	const body = await readBody(event);
 
-	const account_username = event.context.params.username;
+	const account_username = event.context.params.domain;
 	const dbPath = path.resolve(`./server/data/${account_username}.db`);
 	console.log(`./server/data/${account_username}.db`);
 

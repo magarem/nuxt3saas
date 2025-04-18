@@ -24,9 +24,9 @@ export default defineEventHandler(async (event) => {
     //     });
     // }
 
-    // const username = authHeader.split(" ")[1]; // extract username from header
-    const username = event.context.params.username;
-    const dbPath = path.resolve(`./server/data/${username}.db`);
+    // const domain = authHeader.split(" ")[1]; // extract domain from header
+    const domain = event.context.params.domain;
+    const dbPath = path.resolve(`./server/data/${domain}.db`);
 
     const db = new Database(dbPath); // Open in readonly mode for safety (consider changing this if you need write operations)
     const result = db.prepare(sql).all();
