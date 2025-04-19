@@ -34,7 +34,9 @@
                   <small v-if="submitted && registrationData.password !== registrationData.confirmPassword" class="text-red-500">As senhas não coincidem.</small>
                 </div>
   
-                <Button type="submit" label="Registrar" class="w-full" />
+                <Button type="submit" :disabled="isButtonRegisterTriger" :label="registerButtonLabel" class="w-full mb-3" />
+                <a :href="linkToLogin" class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Já tenho uma conta</a>
+
               </form>
               <div v-if="error" class="mt-4 text-red-500">{{ error }}</div>
             </div>
@@ -60,6 +62,8 @@
   const route = useRoute();
   const domain = route.params.domain;
   
+  const linkToLogin = '/' + domain + '/auth/login';
+
   const registrationData = ref({
     username: '',
     email: '',
@@ -69,9 +73,13 @@
   
   const submitted = ref(false);
   const error = ref('');
+  const isButtonRegisterTriger = ref(false);
+  const registerButtonLabel = ref("Registrar");
   
   const register = async () => {
     submitted.value = true;
+    isButtonRegisterTriger.value = true;
+    registerButtonLabel.value = "Aguarde...";
     error.value = '';
   
     if (!registrationData.value.username || !registrationData.value.email || !registrationData.value.password || !registrationData.value.confirmPassword) {
@@ -97,7 +105,7 @@
       if (response.success) {
         toast.add({ severity: 'success', summary: 'Sucesso', detail: response.message || 'Registro bem-sucedido. Redirecionando...', life: 3000 });
         await new Promise(resolve => setTimeout(resolve, 1000));
-        router.push(`/${domain}/auth/login`);
+        router.push(`/${domain}/registerSuccess`);
       } else {
         error.value = response.message || 'Falha ao registrar. Tente novamente.';
         toast.add({ severity: 'error', summary: 'Erro', detail: error.value, life: 3000 });

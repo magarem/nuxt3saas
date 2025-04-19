@@ -13,6 +13,8 @@ const error = ref('');
 const route = useRoute();
 const domain = route.params.domain;
 
+const linkToRegister = '/' + domain + '/register';
+
 const login = async () => {
     try {
       const response = await $fetch(`/api/${domain}/login`, {
@@ -67,10 +69,12 @@ const login = async () => {
                             <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Esqueci minha senha?</span>
                         </div>
                         
-                        <Button type="submit" label="Entrar" class="w-full"  to="/"></Button>
+                        <Button type="submit" label="Entrar" class="w-full mb-3"  to="/"></Button>
                     </form>
                     {{error}}
                     {{response}}
+                    <a :href="linkToRegister" class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Registrar novo usuário</a>
+
                     </div>
                 </div>
             </div>

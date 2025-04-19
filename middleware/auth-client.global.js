@@ -13,11 +13,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		'/dashboard',
 		'/password',
 		'/profile',
-		'/user',
-		'/register'
+		'/register',
+		'/verify-email',
+		'/registerSuccess',
 	];
 
-	if (allowedPaths.some(path => to.path.endsWith(path))) {
+	if (allowedPaths.some(path => to.path.includes(path))) {
 		console.log('acesso a páginas base:', to);
 		return;
 	}

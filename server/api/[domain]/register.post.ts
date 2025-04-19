@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
 
 		if (result.changes > 0) { // 5. Gerar token de verificação de email
 			const verificationToken = crypto.randomBytes(20).toString('hex');
-			const verificationLink = `http://seu_site.com/${domain}/verify-email/${verificationToken}`;
+			const verificationLink = `http://localhost:3000/${domain}/verify-email/${verificationToken}`;
 			// Adapte a URL
 
 			// 6. Salvar o token no banco de dados (associado ao usuário)
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
         UPDATE users
         SET verificationToken = ?, verificationTokenExpiry = ?
         WHERE id = ?
-      `).run(verificationToken, Date.now() + 3600000, userId);
+      `).run(verificationToken, Date.now() + 7600000, userId);
 
 
 			// 7. Enviar o email de confirmação usando MailerSend

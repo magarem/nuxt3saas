@@ -20,7 +20,7 @@ function verificarLoginPorNome(db, nomeDigitado, senhaDigitada) {
         FROM users u
         LEFT JOIN user_roles ur ON u.id = ur.user_id
         LEFT JOIN roles r ON ur.role_id = r.id
-        WHERE u.nome = ?
+        WHERE u.nome = ? AND u.status != 'pending'
         GROUP BY u.id, u.nome, u.email, u.telefone, u.password, u.status
         
     `);
