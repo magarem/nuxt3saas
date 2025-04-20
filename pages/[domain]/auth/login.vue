@@ -1,95 +1,147 @@
 <script setup>
 definePageMeta({
-  layout: false, // ou 'empty'
-})
-import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
-import { ref } from 'vue';
+  layout: false // ou 'empty'
+});
+import FloatingConfigurator from "@/components/FloatingConfigurator.vue";
+import { ref } from "vue";
 
 // const email = ref('');
-const username = ref('maga');
-const password = ref('12345');
+const username = ref("maga");
+const password = ref("12345");
 const checked = ref(false);
-const error = ref('');
+const error = ref("");
 const route = useRoute();
 const domain = route.params.domain;
 
-const linkToRegister = '/' + domain + '/register';
 
+
+
+
+const linkToRegister = "/" + domain + "/register";
+const linkToRemember = "/" + domain + "/forgotPasswordEmail";
 const login = async () => {
-    try {
-      const response = await $fetch(`/api/${domain}/login`, {
-        method: 'POST',
-        body: { username: username.value, password: password.value },
-      });
+  try {
+    const response = await $fetch(`/api/${domain}/login`, {
+      method: "POST",
+      body: { username: username.value, password: password.value }
+    });
 
-      console.log(555, response);
-  
-      if (response.success) {
-        // Armazena o token JWT (por exemplo, em localStorage)
-        // localStorage.setItem('token', response.token);
-        console.log('/'+domain+'/');
-  
-        // Redireciona para a página protegida
-        navigateTo({path:'/'+domain+'/dashboard'});
-      } else {
-        error.value = response;
-      }
-    } catch (err) {
-      error.value = 'Erro ao fazer login';
+    console.log(555, response);
+
+    if (response.success) {
+      // Armazena o token JWT (por exemplo, em localStorage)
+      // localStorage.setItem('token', response.token);
+      console.log("/" + domain + "/");
+
+      // Redireciona para a página protegida
+      navigateTo({ path: "/" + domain + "/dashboard" });
+    } else {
+      error.value = response;
     }
-  };
-
-
+  } catch (err) {
+    error.value = "Erro ao fazer login";
+  }
+};
 </script>
 
 <template>
-    <FloatingConfigurator />
-    <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
-        <div class="flex flex-col items-center justify-center">
-            <div style="border-radius: 20px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
-                <div class="w-full bg-surface-0 dark:bg-surface-900 py-15 px-8 sm:px-20" style="border-radius: 53px">
-                    <div class="text-center mb-8">
-                        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Bem vindo!</div>
-                        <!-- <span class="text-muted-color font-medium">Sign in to continue</span> -->
-                    </div>
+  <FloatingConfigurator />
 
-                    <div>
-                        <form @submit.prevent="login">
-                        <label for="email1" class="block text-surface-900 dark:text-surface-0 text-sm font-medium mb-2">Username</label>
-                        <InputText id="username" type="text" placeholder="User name" class="w-full md:w-[30rem] mb-4" v-model="username" />
-
-                        <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-sm mb-2">Senha</label>
-                        <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
-
-                        <div class="flex items-center justify-between mt-2 mb-4 gap-8">
-                            <!-- <div class="flex items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1">Remember me</label>
-                            </div> -->
-                            <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Esqueci minha senha?</span>
-                        </div>
-                        
-                        <Button type="submit" label="Entrar" class="w-full mb-3"  to="/"></Button>
-                    </form>
-                    {{error}}
-                    {{response}}
-                    <a :href="linkToRegister" class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Registrar novo usuário</a>
-
-                    </div>
-                </div>
-            </div>
+  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
+    <div class="w-full max-w-lg p-1 rounded-[2px]  from-indigo-600/50 to-transparent shadow-xl">
+      <div class="bg-gray-900 rounded-[13px] py-12 px-6 sm:px-14 backdrop-blur-md border border-gray-800">
+        <!-- Título -->
+        <div class="text-center mb-8">
+          <h2 class="text-4xl font-semibold text-white mb-2">Bem-vindo!</h2>
+          <p class="text-gray-400 text-sm">Faça login para continuar</p>
         </div>
+
+        <!-- Formulário -->
+        <form @submit.prevent="login" class="space-y-5">
+          <!-- Usuário -->
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-300 mb-1">
+              Usuário
+            </label>
+            <InputText
+              id="username"
+              type="text"
+              v-model="username"
+              placeholder="Digite seu nome de usuário"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Senha -->
+          <div>
+            <label for="password1" class="block text-sm font-medium text-gray-300 mb-1">
+              Senha
+            </label>
+            <Password
+              id="password1"
+              v-model="password"
+              placeholder="Digite sua senha"
+              :toggleMask="true"
+              fluid
+              :feedback="false"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Lembrete + Esqueci -->
+          <div class="flex items-center justify-between mt-2 mb-2 text-sm text-gray-400">
+            <div class="flex items-center gap-2">
+              <Checkbox v-model="checked" id="rememberme1" binary class="mr-1" />
+              <label for="rememberme1">Lembrar de mim</label>
+            </div>
+
+            <a
+              :href="linkToRemember"
+              class="text-indigo-400 hover:text-indigo-300 transition"
+            >
+              Esqueci minha senha?
+            </a>
+          </div>
+
+          <!-- Botão -->
+          <Button
+            type="submit"
+            label="Entrar"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 transition text-white font-medium py-2 rounded-lg shadow-md"
+          />
+
+          <!-- Feedback -->
+          <div v-if="error" class="text-center text-red-400 text-sm mt-2">
+            {{ error }}
+          </div>
+          <div v-if="response" class="text-center text-green-400 text-sm mt-2">
+            {{ response }}
+          </div>
+
+          <!-- Registro -->
+          <div class="text-center mt-4">
+            <a
+              :href="linkToRegister"
+              class="text-sm text-indigo-400 hover:text-indigo-300 transition"
+            >
+              Registrar novo usuário
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </template>
+
 
 <style scoped>
 .pi-eye {
-    transform: scale(1.6);
-    margin-right: 1rem;
+  transform: scale(1.6);
+  margin-right: 1rem;
 }
 
 .pi-eye-slash {
-    transform: scale(1.6);
-    margin-right: 1rem;
+  transform: scale(1.6);
+  margin-right: 1rem;
 }
 </style>

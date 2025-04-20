@@ -16,6 +16,9 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		'/register',
 		'/verify-email',
 		'/registerSuccess',
+		'/forgotPasswordEmail',
+		'/reset-password',
+		'/api'
 	];
 
 	if (allowedPaths.some(path => to.path.includes(path))) {
