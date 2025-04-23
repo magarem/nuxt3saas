@@ -2,15 +2,16 @@
   <div class="container mx-auto mt-1 _p-6 rounded-md shadow-md">
     <h2 class="text-2xl font-bold mb-6">Perfil</h2>
     <Toast />
-    <form @submit.prevent="saveProfile" class="grid grid-cols-1 gap-4">
-      <div _class="flex flex-col items-center space-y-4 mb-4">
+    <form v-if="profile" @submit.prevent="saveProfile" class="grid grid-cols-1 gap-4">
+      <div  _class="flex flex-col items-center space-y-4 mb-4">
+        <!-- {{ profile.foto }} -->
         <img
-          v-if="profile.foto"
+          v-if="profile?.foto"
           :src="profile.foto"
           alt="Foto de Perfil"
-          class="w-20 h-20 rounded-full"
+          class="w-20 h-20 rounded-full mb-5"
         />
-        <ProfilePictureUploader :username="profile.nome" @update:imageUrl="updateProfilePicture" />
+        <ProfilePictureUploader :domain="domain" :username="profile.nome" @update:imageUrl="updateProfilePicture" />
       </div>
       <div>
         <label for="name" class="block text-gray-700 font-bold mb-2">
@@ -149,7 +150,9 @@ const profile = ref({
   email: "",
   phone: "",
   password: ""
+  // foto: `/${domain}/${profile.value.nome}/avatar.png`
 });
+
 async function executeQuery(domain, sql) {
   // Added username
   try {
@@ -168,6 +171,10 @@ async function executeQuery(domain, sql) {
     // Handle error
   }
 }
+
+const updateProfilePicture = (imageUrl) => {
+  profile.value.foto = imageUrl;
+};
 
 const changePasswordModal = ref(false);
 
@@ -244,7 +251,7 @@ function openChangePasswordModal() {
 
 async function fetchUserProfile() {
   try {
-    const { data: ret } = await useFetch("/api/~/user");
+    const { data: ret } = await useFetch("/api/user");
 
     console.log("ret.value.user>>>>:::", ret.value.user.username);
     console.log(
@@ -260,6 +267,9 @@ async function fetchUserProfile() {
     console.log("response>>>>:::", response);
     if (response?.length > 0) {
       profile.value = response[0]; // Espalhe os dados do usuário e limpe a senha
+
+      profile.value.foto = `/api/${domain}/${profile.value.nome}/uploads/avatar.png?${Date.now()}`;
+      // profile.value.foto = `/${domain}/${profile.value.nome}/avatar.png`
     } else {
       toast.add({
         severity: "error",
@@ -281,12 +291,14 @@ async function fetchUserProfile() {
 
 async function saveProfile() {
   try {
+    let profileclone = {...profile.value };
+    delete profileclone.foto; // Remover a foto antes de enviar
     // 1. Salvar/atualizar os dados básicos do usuário na tabela 'users'
     const ret = await $fetch(`/api/${domain}/upsert`, {
       method: "POST",
       body: {
         table: "users",
-        data: profile.value,
+        data: profileclone,
         condition: profile.value.id ? `id = ${profile.value.id}` : null
       }
     });
@@ -318,7 +330,7 @@ async function saveProfile() {
   }
 }
 
-// onMounted(async () => {
-await fetchUserProfile();
+// onBeforeMount(async () => {
+ fetchUserProfile();
 // });
 </script>

@@ -15,23 +15,14 @@ async function processAndSaveImage(fileData, fileName, filePath) {
   }
 }
 
-
-
 export default defineEventHandler(async (event) => {
   try {
     const {username} = getRouterParams(event);
     const form = await readMultipartFormData(event);
-
-    // const ret = await $fetch("/api/~/user");
-
     const baseUrl = getRequestURL(event).origin
-    const ret = await $fetch(`${baseUrl}/api/~/user`, {
+    const ret = await $fetch(`${baseUrl}/api/user`, {
       headers: event.headers // mantém o cookie para sessão
     })
-
-    console.log("ret---------000:", ret);
-
-    console.log("User name do upload:", username);
 
     if (!form || form.length === 0) {
       setResponseStatus(event, 400);
@@ -47,12 +38,11 @@ export default defineEventHandler(async (event) => {
 
     // Gerar um nome de arquivo único
     const fileExtension = file.type.split("/")[1];
-    // const fileName = `${uuidv4()}.${fileExtension}`;
     const fileName = `avatar.png`;
-    const filePath = path.join("public", "uploads", ret.user.domain, ret.user.username, fileName); // Diretório onde salvar as fotos
+    const filePath = path.join("server/uploads", ret.user.domain, ret.user.username, fileName); // Diretório onde salvar as fotos
 
     // Criar o diretório de uploads se não existir
-    const uploadDir = path.join(process.cwd(), "public", "uploads", ret.user.domain, ret.user.username)
+    const uploadDir = path.join(process.cwd(), "server/uploads", ret.user.domain, ret.user.username)
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, {recursive: true});
     }
@@ -64,7 +54,7 @@ export default defineEventHandler(async (event) => {
     // Escrever o arquivo no sistema de arquivos
     // fs.writeFileSync(filePath, file.data);
 
-    const imageUrl = `/uploads/${fileName}`; // URL relativa para acessar a foto
+    const imageUrl = `/${filePath}`; // URL relativa para acessar a foto
 
     // const fileData = fs.readFileSync(imageUrl); // Use req.file.buffer se estiver usando multer.memoryStorage
     // const imageProcessed = await processAndSaveImage(fileData, fileName, filePath);

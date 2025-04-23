@@ -11,22 +11,6 @@ function getdomainFromHref(href) {
   return null;
 }
 
-// function getdomainFromPath(fullPath) {
-//   const atIndex = fullPath.indexOf('/@');
-//   if (atIndex === -1) {
-//     return null; // ou '', dependendo do que você quer retornar se não encontrar
-//   }
-
-//   const start = atIndex + 2; // Início do nome do usuário (após '/@')
-//   const end = fullPath.indexOf('/', start);
-//   if (end === -1) {
-//     return fullPath.substring(start); // Se não houver mais '/', pegue até o final
-//   }
-
-//   return fullPath.substring(start, end);
-// }
-
-//
 
 const route = useRoute();
 const domain = getdomainFromHref(route.fullPath || "");

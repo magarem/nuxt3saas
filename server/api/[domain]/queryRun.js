@@ -1,6 +1,4 @@
-// server/api/query.js
-import Database from 'better-sqlite3';
-import path from 'path';
+import { getDatabase } from '~/server/utils/db';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
@@ -26,10 +24,8 @@ export default defineEventHandler(async (event) => {
 
     // const domain = authHeader.split(" ")[1]; // extract domain from header
     const domain = event.context.params.domain;
-    const dbPath = path.resolve(`./server/data/${domain}.db`);
-
-    const db = new Database(dbPath); // Open in readonly mode for safety (consider changing this if you need write operations)
-    // const result = db.prepare(sql).all();
+    // const dbPath = path.resolve(`./server/data/${domain}.db`);
+    const db = getDatabase(domain);
     const stmt = db.prepare(sql);
     const result = stmt.run();
 

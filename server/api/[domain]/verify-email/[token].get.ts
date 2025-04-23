@@ -4,15 +4,13 @@ import Database from 'better-sqlite3';
 
 export default defineEventHandler(async (event) => {
   const { domain, token } = getRouterParams(event);
-  const dbPath = `./server/data/${domain}.db`;
-  let db;
-
+ 
   console.log('Verificando email com token:', token);
   console.log('Caminho do banco de dados:', dbPath);
   console.log('Domínio:', domain);
   
   try {
-    db = new Database(dbPath);
+    const db = getDatabase(domain);
 
     // 1. Verificar se o token existe e não expirou
     const user = db.prepare(`

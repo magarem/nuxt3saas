@@ -1,5 +1,5 @@
 import {defineEventHandler, readBody, getRouterParams, setResponseStatus} from 'h3';
-import Database from 'better-sqlite3';
+import { getDatabase } from '~/server/utils/db';
 import bcrypt from 'bcrypt';
 import sendEmailWithMailerSend from '~/server/api/sendEmail'; // Ajuste o caminho
 
@@ -13,11 +13,10 @@ import crypto from 'crypto';
 export default defineEventHandler(async (event) => {
 	const {domain} = getRouterParams(event);
 	const {username, email, password} = await readBody(event);
-	const dbPath = `./server/data/${domain}.db`;
-	let db;
 
 	try {
-		db = new Database(dbPath);
+		
+		const db = getDatabase(user);
 
 		// 1. Validar os dados (Exemplo básico)
 		if (!username || !email || !password) {

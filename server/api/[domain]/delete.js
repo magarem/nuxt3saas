@@ -1,14 +1,12 @@
 
-import Database from 'better-sqlite3';
-import path from 'path';
+import { getDatabase } from '~/server/utils/db';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
   const { table, condition } = body;
 
-  const username = event.context.params.username;
-  const dbPath = path.resolve(`./server/data/${username}.db`);
-  const db = new Database(dbPath); 
+  const domain = event.context.params.domain;
+  const db = getDatabase(domain);
 
   if (!table || !condition) {
     throw createError({

@@ -8,7 +8,7 @@ const router = useRouter();
 const currentPath = router.currentRoute.value.path
 console.log('currentPath>>>>:', currentPath + '/dashboard');
 
-const response = await $fetch(`/api${currentPath}/user`);
+const response = await $fetch(`/api/user`);
 
 console.log('response>>>>:', response);
 

@@ -1,4 +1,7 @@
 <template>
+    <div class="absolute top-4 left-4 z-10">
+    <img src="/assets/logo-saaskit.png" alt="SaasKit Logo" class="h-12 w-auto" />
+  </div>
     <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
       <div class="w-full max-w-md p-8 bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700">
         <h2 class="text-3xl font-semibold text-white text-center mb-6 tracking-tight">

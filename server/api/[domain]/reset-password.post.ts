@@ -1,17 +1,15 @@
 // server/api/[domain]/verify-email/[token].get.ts
 import { defineEventHandler, readBody, getRouterParams, setResponseStatus } from "h3";
-import Database from "better-sqlite3";
+import { getDatabase } from '~/server/utils/db';
 import bcrypt from "bcrypt";
 import path from 'path';
 
 export default defineEventHandler(async (event) => {
   const { domain} = getRouterParams(event);
   const { token, newPassword } = await readBody(event); // Assuming you're getting newPassword in the body
-  const dbPath = path.resolve(`./server/data/${domain}.db`);
-  let db;
-
+ 
   try {
-    db = new Database(dbPath);
+    const db = getDatabase(user);
 
     // 1. Verificar se o token é válido e não expirou
     const user = db.prepare(`

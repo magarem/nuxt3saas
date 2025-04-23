@@ -1,13 +1,10 @@
-// server/api/[username]/lista.js
-import Database from 'better-sqlite3';
-import path from 'path';
+import { getDatabase } from '~/server/utils/db';
 
 export default defineEventHandler((event) => {
-  const username = event.context.params.username;
-  const dbPath = path.resolve(`./server/data/${username}.db`);
-
+  const domain = event.context.params.domain;
+  
   try {
-    const db = new Database(dbPath, { readonly: true });
+    const db = getDatabase(domain);
     const contatos = db.prepare('SELECT * FROM contatos').all();
     db.close();
     return contatos;

@@ -1,9 +1,6 @@
 <template>
   <div>
-    <div class="mb-4">
-      <!-- <label class="block text-gray-700 font-bold mb-2">
-        Foto de Perfil Atual:
-      </label> -->
+    <!-- <div class="mb-4">
       <img
         v-if="currentImageUrl"
         :src="currentImageUrl"
@@ -13,23 +10,36 @@
       <div v-else class="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
         <span class="text-gray-500">Sem Foto</span>
       </div>
-    </div>
+    </div> -->
 
     <!-- <label class="block text-gray-700 font-bold mb-2">
       Selecionar Nova Foto de Perfil:
     </label> -->
+    
+  <!-- Label estilizado como botão -->
+  <label
+      for="upload-input"
+      class="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-block"
+    >
+      Selecionar Foto
+    </label>
+
+    <!-- Input escondido -->
     <input
+      id="upload-input"
       type="file"
       @change="handleFileChange"
       accept="image/*"
-      class="shadow appearance-none border rounded w-1/3 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-    /><br/>
-    <button
+      class="hidden"
+    />
+    
+    <!-- <button
       @click="uploadFile"
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
       >
       Enviar Foto
-    </button>
+    </button> -->
+    
     <div v-if="uploading" class="mt-4">
       Enviando...
     </div>
@@ -54,20 +64,21 @@ const uploadSuccess = ref(false);
 const uploadError = ref(false);
 const uploadErrorMessage = ref('');
 
-let username = defineProps(['username'])
-
-username = username.username; // Obtenha o username do componente pai
+let props = defineProps(['domain', 'username'])
 const emit = defineEmits(['update:imageUrl']);
-console.log('username>>>>:', username);
-
-const route = useRoute();
-const domain = route.params.domain; // Obtenha o username da rota
 
 // Construa a URL da foto de perfil atual
-const currentImageUrl = ref(`/uploads/${domain}/${username}/avatar.png?${Date.now()}`);
+const currentImageUrl = ref(`/api/${props.domain}/${props.username}/avatar.png?${Date.now()}`);
+
+// const handleFileChange = (event) => {
+//   file.value = event.target.files[0];
+// };
 
 const handleFileChange = (event) => {
   file.value = event.target.files[0];
+  if (file.value) {
+    uploadFile(); // 🔄 Envia o arquivo automaticamente
+  }
 };
 
 const uploadFile = async () => {
@@ -99,8 +110,8 @@ const uploadFile = async () => {
 
     if (data.success) {
       uploadSuccess.value = true;
-      currentImageUrl.value = `/uploads/${domain}/${username}/avatar.png?${Date.now()}`; // Atualize a URL da imagem atual
-      emit('update:imageUrl', data.imageUrl);
+      currentImageUrl.value = `/api/${props.domain}/${props.username}/uploads/avatar.png?${Date.now()}`; // Atualize a URL da imagem atual
+      emit('update:imageUrl', currentImageUrl.value);
     } else {
       uploadError.value = true;
       uploadErrorMessage.value = data.message || 'Falha ao enviar a foto.';

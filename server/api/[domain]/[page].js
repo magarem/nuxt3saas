@@ -1,7 +1,5 @@
 import jwt from 'jsonwebtoken';
-import Database from 'better-sqlite3';
-import path from 'path';
-import fs from 'fs';
+import { getDatabase } from '~/server/utils/db';
 import { defineEventHandler, readBody, getRouterParams, setResponseStatus, getCookie, sendRedirect, createError, sendError } from 'h3'; // Importações corretas
 
 function ensureArray(value) {
@@ -14,13 +12,13 @@ function ensureArray(value) {
 
 export default defineEventHandler(async (event) => {
   const { domain, page } = getRouterParams(event); // Use desestruturação para clareza
-  const dbPath = path.resolve(`./server/data/${domain}.db`);
+  // const dbPath = path.resolve(`./server/data/${domain}.db`);
+  // const dbPath =  path.join(process.cwd(), 'server/data', `${domain}.db`);
+  // if (!fs.existsSync(dbPath)) {
+  //   return sendError(event, createError({ statusCode: 404, statusMessage: `Database not found for domain: ${domain}` }));
+  // }
 
-  if (!fs.existsSync(dbPath)) {
-    return sendError(event, createError({ statusCode: 404, statusMessage: `Database not found for domain: ${domain}` }));
-  }
-
-  const db = new Database(dbPath);
+  const db = getDatabase(domain);
   const authToken = getCookie(event, 'auth_token');
 
   if (!authToken) {

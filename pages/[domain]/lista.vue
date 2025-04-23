@@ -3,7 +3,7 @@
   </template>
   
   <script setup>
-  import MyTableComponent from './MyTableComponent.vue'; // Substitua pelo caminho correto
+  import MyTableComponent from '~/components/MyTableComponent.vue'; // Substitua pelo caminho correto
   import { ref } from 'vue';
   
 async function executeQuery(username, sql) {  // Added username

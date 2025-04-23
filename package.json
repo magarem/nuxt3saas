@@ -3,14 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test:e2e": "cucumber-js",
     "test:e2e:ci": "CI=true cucumber-js",
-    "test:e2e:report": "cucumber-js --format html:reports/report.html"
+    "test:e2e:report": "cucumber-js --format html:reports/report.html",
+    "prepare": "nuxt prepare",
+    "build": "nuxt prepare && nuxt build && cp -r server/data .output/server/data"
+  
   },
   "dependencies": {
     "@nuxt/scripts": "^0.11.5",

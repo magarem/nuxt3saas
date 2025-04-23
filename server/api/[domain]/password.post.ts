@@ -1,19 +1,14 @@
 // server/api/[username]/user/password.post.ts (ou .js)
 import { defineEventHandler, readBody, getRouterParams, setResponseStatus } from 'h3';
-import Database from 'better-sqlite3';
+import { getDatabase } from '~/server/utils/db';
 import bcrypt from 'bcrypt'; // Instale: npm install bcrypt
 
 export default defineEventHandler(async (event) => {
   const { domain } = getRouterParams(event);
   const { userId, currentPassword, newPassword } = await readBody(event);
- 
- console.log(222, userId, currentPassword, newPassword)
- 
-  const dbPath = `./server/data/${domain}.db`;
-  let db;
 
   try {
-    db = new Database(dbPath);
+    const db = getDatabase(domain);
 
     // 1. Buscar a senha atual do usuário (HASHED)
     const storedHash = db.prepare('SELECT password FROM users WHERE id = ?').get(userId)?.password;

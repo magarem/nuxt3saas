@@ -1,15 +1,13 @@
-// plugins/sqlite.server.js
-import Database from 'better-sqlite3';
-import path from 'path'; // Importe o módulo 'path'
+import { getDatabase } from '~/server/utils/db';
 
 export default defineNuxtPlugin((nuxtApp) => {
   return {
     provide: {
       sqlite: {
-        getContatos: (usuario) => {
-          const dbPath = path.resolve(`./server/data/${usuario}.db`); // Constrói o caminho dinamicamente
+        getContatos: (domain) => {
+         
           try {
-            const db = new Database(dbPath, { readonly: true });
+            const db = getDatabase(domain);
             const contatos = db.prepare('SELECT * FROM contatos').all();
             db.close();
             return contatos;

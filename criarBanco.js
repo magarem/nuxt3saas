@@ -1,17 +1,9 @@
-import sqlite3 from "better-sqlite3";
-import fs from "fs";
+import { getDatabase } from '~/server/utils/db';
 
-function criarBancoDeDados(nomeUsuario) {
-  const nomeArquivo = `server/data/${nomeUsuario}.db`;
-
-  // Verifica se o arquivo já existe
-  // if (fs.existsSync(nomeArquivo)) {
-  //     console.log(`Banco de dados ${nomeArquivo} já existe.`);
-  //     return;
-  // }
-
+function criarBancoDeDados(domain) {
+ 
   try {
-    const db = new sqlite3(nomeArquivo);
+    const db = getDatabase(domain);
 
     // Cria a tabela contatos
     db.exec(`
@@ -84,4 +76,4 @@ if (!nomeUsuario) {
   process.exit(1);
 }
 
-criarBancoDeDados(nomeUsuario);
+criarBancoDeDados(domain);

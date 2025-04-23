@@ -5,5 +5,5 @@
 </template>
 
 <script setup>
-const { data: ret } = await useFetch("/api/~/user"); 
+const { data: ret } = await useFetch("/api/user"); 
 </script>

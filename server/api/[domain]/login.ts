@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import {H3Event, createError, setCookie, readBody} from "h3";
-import Database from "better-sqlite3";
-import path from "path";
+import { getDatabase } from '~/server/utils/db';
 
 const SECRET_KEY = "chave_secreta";
 
@@ -20,12 +19,12 @@ function verificarLoginPorNome(db, nomeDigitado, senhaDigitada) {
         FROM users u
         LEFT JOIN user_roles ur ON u.id = ur.user_id
         LEFT JOIN roles r ON ur.role_id = r.id
-        WHERE u.nome = ? AND u.status != 'pending'
+        WHERE (u.nome = ? or u.email = ?)AND u.status != 'pending'
         GROUP BY u.id, u.nome, u.email, u.telefone, u.password, u.status
         
     `);
 
-		const usuarioEncontrado = stmt.get(nomeDigitado);
+		const usuarioEncontrado = stmt.get(nomeDigitado, nomeDigitado);
 		console.log("usuarioEncontrado:", usuarioEncontrado);
 
 		if (usuarioEncontrado && usuarioEncontrado.password === senhaDigitada) {
@@ -42,28 +41,19 @@ function verificarLoginPorNome(db, nomeDigitado, senhaDigitada) {
 export default defineEventHandler(async (event : H3Event) => {
 	const body = await readBody(event);
 
-	const account_username = event.context.params.domain;
-	const dbPath = path.resolve(`./server/data/${account_username}.db`);
-	console.log(`./server/data/${account_username}.db`);
-
-	const db = new Database(dbPath); // Open in readonly mode for safety (consider changing this if you need write operations)
-
-	console.log(222, body.username, body.password);
-
+	const domain = event.context.params.domain;
+	const db = getDatabase(domain);
 	const findUser = verificarLoginPorNome(db, body.username, body.password);
-
-	console.log(333, findUser);
 
 	if (! findUser.sucesso) {
 		throw createError({statusCode: 401, statusMessage: "Credenciais inválidas"});
 	}
   
-
 	const token = jwt.sign({
 		timeStamp: new Date().getTime(),
 		id: findUser.usuario.id,
 		email: findUser.usuario.email,
-		domain: account_username,
+		domain: domain,
 		username: findUser.usuario.nome,
 		roles: findUser.usuario.roles_ids
 	}, SECRET_KEY, {expiresIn: "1h"});
@@ -76,18 +66,9 @@ export default defineEventHandler(async (event : H3Event) => {
 		maxAge: 3600
 	});
 
-	const userDataToStore = {
-		... findUser.usuario
-	};
-	delete userDataToStore.password;
+	const userDataToStore = {... findUser.usuario};
 
-	// setCookie(event, "user_logged", JSON.stringify(userDataToStore), {
-	// httpOnly: false,
-	// secure: process.env.NODE_ENV === "production",
-	// sameSite: "strict",
-	// path: "/",
-	// maxAge: 3600
-	// });
+	delete userDataToStore.password;
 
 	return {success: true, message: "Login realizado com sucesso", token};
 });

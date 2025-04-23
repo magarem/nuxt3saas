@@ -1,6 +1,4 @@
-// server/api/upsert.js
-import Database from 'better-sqlite3';
-import path from 'path';
+import { getDatabase } from '~/server/utils/db';
 
 export default defineEventHandler(async (event) => {
 
@@ -14,10 +12,8 @@ export default defineEventHandler(async (event) => {
   console.log('data', data);
   console.log('condition', condition);
   const domain = event.context.params.domain;
-  const dbPath = path.resolve(`./server/data/${domain}.db`);
 
-  const db = new Database(dbPath); // Open in readonly mode for safety (consider changing this if you need write operations)
-    
+  const db = getDatabase(domain);  
 
   if (!table || !data) {
     throw createError({

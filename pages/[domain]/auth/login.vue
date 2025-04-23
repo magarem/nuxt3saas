@@ -6,19 +6,16 @@ import FloatingConfigurator from "@/components/FloatingConfigurator.vue";
 import { ref } from "vue";
 
 // const email = ref('');
-const username = ref("maga");
-const password = ref("12345");
+const username = ref("");
+const password = ref("");
 const checked = ref(false);
 const error = ref("");
 const route = useRoute();
 const domain = route.params.domain;
 
-
-
-
-
 const linkToRegister = "/" + domain + "/register";
 const linkToRemember = "/" + domain + "/forgotPasswordEmail";
+
 const login = async () => {
   try {
     const response = await $fetch(`/api/${domain}/login`, {
@@ -26,13 +23,10 @@ const login = async () => {
       body: { username: username.value, password: password.value }
     });
 
-    console.log(555, response);
 
     if (response.success) {
       // Armazena o token JWT (por exemplo, em localStorage)
       // localStorage.setItem('token', response.token);
-      console.log("/" + domain + "/");
-
       // Redireciona para a página protegida
       navigateTo({ path: "/" + domain + "/dashboard" });
     } else {
@@ -45,23 +39,26 @@ const login = async () => {
 </script>
 
 <template>
-  <FloatingConfigurator />
+  <!-- <FloatingConfigurator /> -->
 
+  <!-- Logo no canto superior esquerdo -->
+  <div class="absolute top-4 left-4 z-10">
+    <img src="/assets/logo-saaskit.png" alt="SaasKit Logo" class="h-12 w-auto" />
+  </div>
+
+  <!-- Fundo e formulário central -->
   <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
-    <div class="w-full max-w-lg p-1 rounded-[2px]  from-indigo-600/50 to-transparent shadow-xl">
+    <div class="w-full max-w-lg p-1 rounded-[2px] from-indigo-600/50 to-transparent shadow-xl">
       <div class="bg-gray-900 rounded-[13px] py-12 px-6 sm:px-14 backdrop-blur-md border border-gray-800">
-        <!-- Título -->
-        <div class="text-center mb-8">
-          <h2 class="text-4xl font-semibold text-white mb-2">Bem-vindo!</h2>
-          <p class="text-gray-400 text-sm">Faça login para continuar</p>
-        </div>
-
+        <h2 class="text-2xl font-semibold text-white text-center mb-6">
+  Identificação de usuário
+</h2>
         <!-- Formulário -->
         <form @submit.prevent="login" class="space-y-5">
           <!-- Usuário -->
           <div>
             <label for="username" class="block text-sm font-medium text-gray-300 mb-1">
-              Usuário
+              Usuário ou E-mail
             </label>
             <InputText
               id="username"
@@ -107,7 +104,7 @@ const login = async () => {
           <Button
             type="submit"
             label="Entrar"
-            class="w-full bg-indigo-600 hover:bg-indigo-700 transition text-white font-medium py-2 rounded-lg shadow-md"
+            class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 transition text-white font-medium py-2 rounded-lg shadow-md"
           />
 
           <!-- Feedback -->
@@ -119,7 +116,7 @@ const login = async () => {
           </div>
 
           <!-- Registro -->
-          <div class="text-center mt-4">
+          <div class="text-center _mt-4">
             <a
               :href="linkToRegister"
               class="text-sm text-indigo-400 hover:text-indigo-300 transition"
@@ -132,6 +129,8 @@ const login = async () => {
     </div>
   </div>
 </template>
+
+
 
 
 <style scoped>

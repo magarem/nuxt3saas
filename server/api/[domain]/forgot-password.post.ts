@@ -3,19 +3,15 @@ import Database from "better-sqlite3"; // Ou sua biblioteca de banco de dados
 import crypto from "crypto"; // Para gerar tokens
 import nodemailer from "nodemailer"; // Para enviar e-mails
 import bcrypt from "bcrypt"; // Para comparar senhas
-import path from 'path';
+import { getDatabase } from '~/server/utils/db';
 
 export default defineEventHandler(async (event) => {
   const {email} = await readBody(event);
   const domain = event.context.params.domain;
-  const dbPath = path.resolve(`./server/data/${domain}.db`);
-//   const db = new Database(dbPath);
-
-  let db;
 
   try {
-    db = new Database(dbPath);
-
+   
+    const db = getDatabase(domain);
     // 1. Verificar se o e-mail existe no banco de dados
     const user = db.prepare("SELECT id, nome FROM users WHERE email = ?").get(email);
 
