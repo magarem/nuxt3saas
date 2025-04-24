@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import {v4 as uuidv4} from "uuid"; // Para gerar nomes de arquivo únicos
 import sharp from "sharp";
+import jwt from 'jsonwebtoken';
 
 async function processAndSaveImage(fileData, fileName, filePath) {
   try {
@@ -20,9 +21,11 @@ export default defineEventHandler(async (event) => {
     const {username} = getRouterParams(event);
     const form = await readMultipartFormData(event);
     const baseUrl = getRequestURL(event).origin
-    const ret = await $fetch(`${baseUrl}/api/user`, {
-      headers: event.headers // mantém o cookie para sessão
-    })
+    const authToken = getCookie(event, "auth_token"); // Get the auth_token directly
+    const decoded = jwt.verify(authToken, "chave_secreta");
+    // const ret = await $fetch(`${baseUrl}/api/user`, {
+    //   headers: event.headers // mantém o cookie para sessão
+    // })
 
     if (!form || form.length === 0) {
       setResponseStatus(event, 400);
@@ -39,10 +42,10 @@ export default defineEventHandler(async (event) => {
     // Gerar um nome de arquivo único
     const fileExtension = file.type.split("/")[1];
     const fileName = `avatar.png`;
-    const filePath = path.join("server/uploads", ret.user.domain, ret.user.username, fileName); // Diretório onde salvar as fotos
+    const filePath = path.join("server/uploads", decoded.domain, decoded.username, fileName); // Diretório onde salvar as fotos
 
     // Criar o diretório de uploads se não existir
-    const uploadDir = path.join(process.cwd(), "server/uploads", ret.user.domain, ret.user.username)
+    const uploadDir = path.join(process.cwd(), "server/uploads", decoded.domain, decoded.username)
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, {recursive: true});
     }

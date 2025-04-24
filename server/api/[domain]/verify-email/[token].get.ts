@@ -6,7 +6,6 @@ export default defineEventHandler(async (event) => {
   const { domain, token } = getRouterParams(event);
  
   console.log('Verificando email com token:', token);
-  console.log('Caminho do banco de dados:', dbPath);
   console.log('Domínio:', domain);
   
   try {

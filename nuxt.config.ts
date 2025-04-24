@@ -4,18 +4,18 @@ import Aura from '@primevue/themes/aura';
 export default defineNuxtConfig({
   nitro: {
     
-    routeRules: {
-      '/*/auth/login': { // Qualquer segmento antes de /auth/login
-        headers: {
-          'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests; base-uri 'self'; form-action 'self' https://93.127.212.29:4000;"
-        }
-      },
-      '/**': { // CSP padrão para o restante da aplicação
-        headers: {
-          'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests; base-uri 'self'; form-action 'self';"
-        }
-      }
-    },
+    // routeRules: {
+    //   '/*/auth/login': { // Qualquer segmento antes de /auth/login
+    //     headers: {
+    //       'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests; base-uri 'self'; form-action 'self' http://localhost:3000;"
+    //     }
+    //   },
+    //   '/**': { // CSP padrão para o restante da aplicação
+    //     headers: {
+    //       'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests; base-uri 'self'; form-action 'self';"
+    //     }
+    //   }
+    // },
 
     publicAssets: [
       {

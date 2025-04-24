@@ -64,7 +64,7 @@ const logout = async () => {
         <img
           src="/assets/logo-saaskit.png"
           alt="SaasKit Logo"
-          class="h-8 w-auto"
+          _class="h-8 w-auto"
         />
       </router-link>
     </div>

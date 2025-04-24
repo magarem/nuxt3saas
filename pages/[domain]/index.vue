@@ -14,10 +14,10 @@ console.log('response>>>>:', response);
 
 if (response.statusCode == 401) {
   // Redireciona para a página de login
-  router.push(currentPath +'/auth/login');
+  router.push((currentPath +'/auth/login').replaceAll('//', '/'));
 } else {
   // Redireciona para a página de dashboard
-  router.push(currentPath + '/dashboard');
+  router.push((currentPath + '/dashboard').replaceAll('//', '/'));
 }
 
 </script>

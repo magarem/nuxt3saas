@@ -1,26 +1,23 @@
-// server/api/[domain]/verify-email/[token].get.ts
-import { defineEventHandler, readBody, getRouterParams, setResponseStatus } from "h3";
-import { getDatabase } from '~/server/utils/db';
-import bcrypt from "bcrypt";
-import path from 'path';
+import {defineEventHandler, readBody, getRouterParams, setResponseStatus} from "h3";
+import {getDatabase} from "~/server/utils/db";
+// import bcrypt from "bcrypt";
+// import path from "path";
 
 export default defineEventHandler(async (event) => {
-  const { domain} = getRouterParams(event);
-  const { token, newPassword } = await readBody(event); // Assuming you're getting newPassword in the body
- 
+  const {domain} = getRouterParams(event);
+  const {token, newPassword} = await readBody(event); // Assuming you're getting newPassword in the body
+  const db = getDatabase(domain);
   try {
-    const db = getDatabase(user);
-
     // 1. Verificar se o token é válido e não expirou
     const user = db.prepare(`
       SELECT id FROM users WHERE resetToken = ? AND resetTokenExpiry > ?
     `).get(token, Date.now());
 
-    console.log('user (reset-password):', user);
+    console.log("user (reset-password):", user);
 
     if (!user) {
       setResponseStatus(event, 400);
-      return { success: false, message: "Token de redefinição de senha inválido ou expirado." };
+      return {success: false, message: "Token de redefinição de senha inválido ou expirado."};
     }
 
     // 2. Hash a nova senha
@@ -34,7 +31,7 @@ export default defineEventHandler(async (event) => {
 
     if (updateResult.changes === 0) {
       setResponseStatus(event, 500);
-      return { success: false, message: "Falha ao atualizar a senha." };
+      return {success: false, message: "Falha ao atualizar a senha."};
     }
 
     // 4. Remover o token de redefinição
@@ -48,12 +45,11 @@ export default defineEventHandler(async (event) => {
       // Não é um erro crítico, mas você pode querer registrar isso
     }
 
-    return { success: true, message: "Senha redefinida com sucesso." };
-
+    return {success: true, message: "Senha redefinida com sucesso."};
   } catch (error) {
     console.error("Erro ao redefinir senha:", error);
     setResponseStatus(event, 500);
-    return { success: false, message: "Erro ao redefinir a senha.", error: error.message };
+    return {success: false, message: "Erro ao redefinir a senha.", error: error.message};
   } finally {
     if (db) {
       db.close();

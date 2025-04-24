@@ -2,7 +2,6 @@
 definePageMeta({
   layout: false // ou 'empty'
 });
-import FloatingConfigurator from "@/components/FloatingConfigurator.vue";
 import { ref } from "vue";
 
 // const email = ref('');
@@ -23,7 +22,6 @@ const login = async () => {
       body: { username: username.value, password: password.value }
     });
 
-
     if (response.success) {
       // Armazena o token JWT (por exemplo, em localStorage)
       // localStorage.setItem('token', response.token);
@@ -43,41 +41,57 @@ const login = async () => {
 
   <!-- Logo no canto superior esquerdo -->
   <div class="absolute top-4 left-4 z-10">
-    <img src="/assets/logo-saaskit.png" alt="SaasKit Logo" class="h-12 w-auto" />
+    <img
+      src="/assets/logo-saaskit.png"
+      alt="SaasKit Logo"
+      _class="h-12 w-auto"
+    />
   </div>
 
   <!-- Fundo e formulário central -->
-  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
-    <div class="w-full max-w-lg p-1 rounded-[2px] from-indigo-600/50 to-transparent shadow-xl">
-      <div class="bg-gray-900 rounded-[13px] py-12 px-6 sm:px-14 backdrop-blur-md border border-gray-800">
+  <div
+    class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4"
+  >
+    <div
+      class="w-full max-w-lg p-1 rounded-[2px] from-indigo-600/50 to-transparent shadow-xl"
+    >
+      <div
+        class="bg-gray-900 rounded-[13px] py-12 px-6 sm:px-14 backdrop-blur-md border border-gray-800"
+      >
         <h2 class="text-2xl font-semibold text-white text-center mb-6">
-  Identificação de usuário
-</h2>
+          Identificação de usuário
+        </h2>
         <!-- Formulário -->
         <form @submit.prevent="login" class="space-y-5">
           <!-- Usuário -->
           <div>
-            <label for="username" class="block text-sm font-medium text-gray-300 mb-1">
+            <label
+              for="username"
+              class="block text-sm font-medium text-gray-300 mb-1"
+            >
               Usuário ou E-mail
             </label>
             <InputText
               id="username"
               type="text"
               v-model="username"
-              placeholder="Digite seu nome de usuário"
+              placeholder=""
               class="w-full"
             />
           </div>
 
           <!-- Senha -->
           <div>
-            <label for="password1" class="block text-sm font-medium text-gray-300 mb-1">
+            <label
+              for="password1"
+              class="block text-sm font-medium text-gray-300 mb-1"
+            >
               Senha
             </label>
             <Password
               id="password1"
               v-model="password"
-              placeholder="Digite sua senha"
+              placeholder=""
               :toggleMask="true"
               fluid
               :feedback="false"
@@ -86,9 +100,16 @@ const login = async () => {
           </div>
 
           <!-- Lembrete + Esqueci -->
-          <div class="flex items-center justify-between mt-2 mb-2 text-sm text-gray-400">
+          <div
+            class="flex items-center justify-between mt-2 mb-2 text-sm text-gray-400"
+          >
             <div class="flex items-center gap-2">
-              <Checkbox v-model="checked" id="rememberme1" binary class="mr-1" />
+              <Checkbox
+                v-model="checked"
+                id="rememberme1"
+                binary
+                class="mr-1"
+              />
               <label for="rememberme1">Lembrar de mim</label>
             </div>
 
@@ -129,9 +150,6 @@ const login = async () => {
     </div>
   </div>
 </template>
-
-
-
 
 <style scoped>
 .pi-eye {
