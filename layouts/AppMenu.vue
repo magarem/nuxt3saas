@@ -14,16 +14,17 @@ function getdomainFromHref(href) {
 
 const route = useRoute();
 const domain = getdomainFromHref(route.fullPath || "");
+const domain_ = capitalizeFirstLetter(domain);
 console.log("domain>>>>:", domain);
 console.log("route.fullPath>>>>:", route.fullPath);
 console.log("location.href:", location?.href);
 
 const model = ref([
   {
-    label: "",
+    label: '',
     items: [
       {
-        label: "Dashboard",
+        label: domain_,
         icon: "pi pi-fw pi-home",
         to: "/" + domain + "/dashboard"
       },
@@ -62,6 +63,9 @@ const model = ref([
 <template>
   <ul class="layout-menu">
     <template v-for="(item, i) in model" :key="item">
+      <!-- <div class="mt-3 text-sm font-bold text-xl ml-3 text-surface-900 dark:text-surface-0">
+        {{ domain }}
+      </div> -->
       <app-menu-item
         v-if="!item.separator"
         :item="item"

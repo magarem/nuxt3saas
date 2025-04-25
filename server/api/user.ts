@@ -2,6 +2,9 @@
 import jwt from 'jsonwebtoken';
 
 export default defineEventHandler(async (event) => { // Acessa o usuário autenticado do contexto
+	
+	const urlPath = event.path;
+	console.log('Requested URL Path------:', urlPath);
 	const authToken = getCookie(event, "auth_token");
 	// const auth = getCookie(event, "user_logged");
 	console.log('----------[/user]--------------');

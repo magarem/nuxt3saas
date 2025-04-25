@@ -62,11 +62,12 @@ const logout = async () => {
       </button>
       <router-link to="/" class="layout-topbar-logo">
         <img
-          src="/assets/logo-saaskit.png"
+          src="/assets/logo2.png"
           alt="SaasKit Logo"
-          _class="h-8 w-auto"
+          class="h-6 w-auto"
         />
       </router-link>
+      <div ></div>
     </div>
 
     <div class="layout-topbar-actions">

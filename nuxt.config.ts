@@ -2,7 +2,13 @@
 import tailwindcss from "@tailwindcss/vite";
 import Aura from '@primevue/themes/aura';
 export default defineNuxtConfig({
+  
   nitro: {
+    // handlers: [
+    //   { route: '/api/:domain/**', handler: '~/server/middleware/check-domain-exists.js' },
+    //   { route: '/:domain/**', handler: '~/server/middleware/check-domain-exists.js' },
+    //   { route: '/:domain/', handler: '~/server/middleware/check-domain-exists.js' }
+    // ],
     
     // routeRules: {
     //   '/*/auth/login': { // Qualquer segmento antes de /auth/login

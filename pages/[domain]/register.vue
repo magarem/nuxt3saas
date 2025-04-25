@@ -1,7 +1,7 @@
 <template>
     <!-- Logo no canto superior esquerdo -->
     <div class="absolute top-4 left-4 z-10">
-    <img src="/assets/logo-saaskit.png" alt="SaasKit Logo" _class="h-12 w-auto" />
+    <img src="/assets/logo2.png" alt="SaasKit Logo" class="h-7 w-auto" />
   </div>
   <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
     <div class="w-full max-w-sm bg-surface-0 dark:bg-surface-900 shadow-md rounded-xl p-5 border border-surface-200 dark:border-surface-700">
