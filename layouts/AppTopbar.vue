@@ -63,7 +63,7 @@ const logout = async () => {
       <router-link to="/" class="layout-topbar-logo">
         <img
           src="/assets/logo2.png"
-          alt="SaasKit Logo"
+          alt="SuryaNet"
           class="h-6 w-auto"
         />
       </router-link>

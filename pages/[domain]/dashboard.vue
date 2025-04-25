@@ -1,7 +1,6 @@
 <template>
   <div>
     <h1>Bem-vindo, {{ ret.user?.username }}!</h1>
-    {{domain}}
   </div>
 </template>
 

@@ -30,13 +30,13 @@ const checkDomain = async () => {
     domainExists.value = res.exists;
     if (!domainExists.value) {
       // Redirect to the "domain-not-exists" page if the domain doesn't exist
-      router.push(`/${domain}/domain-not-exists`);
+      // router.push(`/${domain}/domain-not-exists`);
     }
   } catch (err) {
     console.error("Erro ao verificar domínio:", err);
     error.value = "Erro ao verificar domínio.";
     domainExists.value = false; // Assume false on error
-    router.push(`/${domain}/domain-not-exists`); // Redirect on error as well
+    // router.push(`/${domain}/domain-not-exists`); // Redirect on error as well
   }
 };
 
@@ -72,13 +72,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="absolute top-4 left-4 z-10">
-    <img src="/assets/logo2.png" alt="SaasKit Logo" class="h-7 w-auto" />
-  </div>
+
 
   <div
     class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4"
   >
+  <div class="absolute top-4 left-4 z-10">
+    <img src="/assets/logo2.png" alt="SuryaNet" class="h-7 w-auto" />
+  </div>
     <div
       class="w-full max-w-lg p-1 rounded-[2px] from-indigo-600/50 to-transparent shadow-xl"
     >

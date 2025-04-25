@@ -143,6 +143,7 @@ import ProfilePictureUploader from "~/components/ProfilePictureUploader.vue";
 import Dialog from "primevue/dialog";
 const toast = useToast();
 const route = useRoute();
+const router = useRouter();
 const domain = route.params.domain;
 
 const profile = ref({
@@ -168,7 +169,7 @@ async function executeQuery(domain, sql) {
     const data = await response.json();
     return data;
   } catch (error) {
-    // Handle error
+    router.push(`/${domain}/auth/login`);
   }
 }
 

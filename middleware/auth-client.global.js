@@ -14,7 +14,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     const domain = to.path.split("/")[1];
     console.log("Domain from URL:", domain);
     if (!to.path.endsWith("login")) {
-      return navigateTo(`/${domain}/auth/login`);
+		// location.href = `/${domain}/auth/login`;
+    //   return navigateTo(`/${domain}/auth/login`);
     }
   }
 else{
@@ -34,7 +35,6 @@ const domainFromUrl = to.path.split("/")[1];
   const allowedPaths = [
     "/auth/login",
     "/forbidden",
-    "/dashboard",
     "/password",
     "/profile",
     "/register",

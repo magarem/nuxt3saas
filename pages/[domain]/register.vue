@@ -1,81 +1,82 @@
 <template>
-    <!-- Logo no canto superior esquerdo -->
     <div class="absolute top-4 left-4 z-10">
-    <img src="/assets/logo2.png" alt="SaasKit Logo" class="h-7 w-auto" />
+    <img src="/assets/logo2.png" alt="SuryaNet" class="h-7 w-auto" />
   </div>
   <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
-    <div class="w-full max-w-sm bg-surface-0 dark:bg-surface-900 shadow-md rounded-xl p-5 border border-surface-200 dark:border-surface-700">
-      <div class="text-center mb-4">
-        <h3 class="text-xs font-semibold text-surface-900 dark:text-surface-0">Criar Conta</h3>
+    <div class="relative w-full max-w-md bg-surface-0 dark:bg-surface-900 shadow-xl rounded-xl p-6 sm:p-8 border border-surface-200 dark:border-surface-700">
+      
+
+      <div class="text-center mb-6">
+        <h2 class="text-xl font-semibold text-surface-900 dark:text-surface-0">Crie sua conta</h2>
       </div>
 
-      <form @submit.prevent="register" class="space-y-3 text-sm" autocomplete="off">
+      <form @submit.prevent="register" class="space-y-4 text-sm" autocomplete="off">
         <div>
-          <label for="username" class="block text-xs font-medium text-surface-900 dark:text-surface-0 mb-1">Username</label>
+          <label for="username" class="block text-surface-700 dark:text-surface-300 font-medium mb-1 text-xs">Nome de Usuário</label>
           <InputText
-          autocomplete="off"
+            autocomplete="off"
             id="username"
             v-model="registrationData.username"
-            placeholder="Username"
-            class="w-full text-sm h-10 px-3 py-2 rounded-md bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-surface-900 dark:text-surface-0"
+            placeholder="Seu nome de usuário"
+            class="w-full h-10 px-3 py-2 rounded-md bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-surface-900 dark:text-surface-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
           />
           <p v-if="submitted && !registrationData.username" class="text-red-500 mt-1 text-xs">Obrigatório.</p>
         </div>
 
         <div>
-          <label for="email" class="block text-xs font-medium text-surface-900 dark:text-surface-0 mb-1">Email</label>
+          <label for="email" class="block text-surface-700 dark:text-surface-300 font-medium mb-1 text-xs">Email</label>
           <InputText
-          autocomplete="off"
+            autocomplete="off"
             id="email"
             v-model="registrationData.email"
             type="email"
-            placeholder="Email"
-            class="w-full text-sm h-10 px-3 py-2 rounded-md bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-surface-900 dark:text-surface-0"
+            placeholder="Seu endereço de email"
+            class="w-full h-10 px-3 py-2 rounded-md bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-surface-900 dark:text-surface-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
           />
           <p v-if="submitted && !registrationData.email" class="text-red-500 mt-1 text-xs">Obrigatório.</p>
         </div>
 
         <div>
-          <label for="password" class="block text-xs font-medium text-surface-900 dark:text-surface-0 mb-1">Senha</label>
+          <label for="password" class="block text-surface-700 dark:text-surface-300 font-medium mb-1 text-xs">Senha</label>
           <Password
-          autocomplete="off"
+            autocomplete="off"
             id="password"
             v-model="registrationData.password"
-            placeholder="Senha"
+            placeholder="Sua senha"
             :toggleMask="true"
             :feedback="false"
             class="w-full"
-            inputClass="w-full text-sm h-10 px-3 py-2 rounded-md bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-surface-900 dark:text-surface-0"
+            inputClass="w-full h-10 px-3 py-2 rounded-md bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-surface-900 dark:text-surface-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
           />
           <p v-if="submitted && !registrationData.password" class="text-red-500 mt-1 text-xs">Obrigatória.</p>
         </div>
 
         <div>
-          <label for="confirmPassword" class="block text-xs font-medium text-surface-900 dark:text-surface-0 mb-1">Confirmar Senha</label>
+          <label for="confirmPassword" class="block text-surface-700 dark:text-surface-300 font-medium mb-1 text-xs">Confirmar Senha</label>
           <Password
-          autocomplete="off"
+            autocomplete="off"
             id="confirmPassword"
             v-model="registrationData.confirmPassword"
-            placeholder="Confirme"
+            placeholder="Confirme sua senha"
             :toggleMask="true"
             :feedback="false"
             class="w-full"
-            inputClass="w-full text-sm h-10 px-3 py-2 rounded-md bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-surface-900 dark:text-surface-0"
+            inputClass="w-full h-10 px-3 py-2 rounded-md bg-white dark:bg-surface-800 border border-surface-300 dark:border-surface-600 text-surface-900 dark:text-surface-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
           />
           <p v-if="submitted && !registrationData.confirmPassword" class="text-red-500 mt-1 text-xs">Obrigatória.</p>
           <p v-if="submitted && registrationData.password !== registrationData.confirmPassword"
-            class="text-red-500 mt-1 text-xs">Senhas diferentes.</p>
+            class="text-red-500 mt-1 text-xs">As senhas não coincidem.</p>
         </div>
 
         <Button
           type="submit"
           :disabled="isButtonRegisterTriger"
           :label="registerButtonLabel"
-          class="w-full text-sm h-10"
+          class="w-full h-10 rounded-md bg-primary hover:bg-primary-dark text-white font-semibold shadow-md transition-colors duration-200"
         />
 
-        <div class="text-center mt-2">
-          <a :href="linkToLogin" class="text-primary text-xs hover:underline">Já tenho uma conta</a>
+        <div class="text-center mt-4">
+          <NuxtLink :to="linkToLogin" class="text-primary text-sm hover:underline">Já tenho uma conta</NuxtLink>
         </div>
 
         <div v-if="error" class="text-center text-red-500 mt-2 text-xs">{{ error }}</div>
@@ -105,6 +106,10 @@
   const route = useRoute();
   const domain = route.params.domain;
   
+
+  const primary = 'indigo-500'; // Define a primary color for consistency
+const primaryDark = 'indigo-700'; 
+
   const linkToLogin = '/' + domain + '/auth/login';
 
   const registrationData = ref({
