@@ -1,4 +1,4 @@
-import { getDatabase } from '~/server/utils/db';
+import { getDatabase } from './server/utils/db.js';
 
 function criarBancoDeDados(domain) {
  
@@ -61,6 +61,35 @@ function criarBancoDeDados(domain) {
       CREATE INDEX if not exists idx_page_roles_page_id ON page_roles(page_id);
      `);
 
+
+
+db.exec(`
+  -- Table for Mailboxes (e.g., Inbox, Sent, Drafts, Trash)
+CREATE TABLE IF NOT EXISTS Mailboxes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
+);
+
+INSERT INTO Mailboxes (name) VALUES
+('Inbox'),
+('Sent'),
+('Drafts'),
+('Trash');
+
+     CREATE TABLE IF NOT EXISTS messages ( 
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender TEXT NOT NULL,
+      receiver TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      body TEXT NOT NULL,
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      is_read INTEGER DEFAULT 0,
+      mailbox_id INTEGER NOT NULL,
+      FOREIGN KEY (mailbox_id) REFERENCES Mailboxes(id)
+  );
+
+  `);
+
     console.log(`Banco de dados ${nomeArquivo} criado com sucesso.`);
     db.close();
   } catch (error) {
@@ -69,11 +98,11 @@ function criarBancoDeDados(domain) {
 }
 
 // Exemplo de uso:
-const nomeUsuario = process.argv[2]; // Pega o nome do usuário do argumento da linha de comando
-
-if (!nomeUsuario) {
+const domain = process.argv[2]; // Pega o nome do usuário do argumento da linha de comando
+console.log("domain", domain);
+if (!domain) {
   console.error("Nome do usuário não fornecido.");
   process.exit(1);
 }
 
-criarBancoDeDados(domain);
+// criarBancoDeDados(domain);

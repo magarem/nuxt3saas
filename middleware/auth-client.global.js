@@ -43,6 +43,7 @@ const domainFromUrl = to.path.split("/")[1];
     "/forgotPasswordEmail",
     "/reset-password",
     "/api",
+    "/messages",
     "/domain-not-exists"
   ];
 
