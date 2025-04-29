@@ -1,57 +1,76 @@
+ // server/api/messages/send.post.js
 import { getDatabase } from '~/server/utils/db';
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event);
-  const { from, to, subject, body: messageBody } = body;
   const domain = event.context.params.domain;
 
+  console.log('domain send email:', domain);
+
+  const body = await readBody(event);
+  const { senderId, receiverId, subject, body: messageBody } = body;
+
+
+  
+  if (!senderId || !receiverId || !subject || !messageBody) {
+    return createError({
+      statusCode: 400,
+      statusMessage: 'Missing required fields: senderId, receiverId, subject, or body.',
+    });
+  }
+
   try {
+    
     const db = getDatabase(domain);
-    // const stmt = db.prepare("SELECT id FROM Mailboxes WHERE name = 'Sent'");
-    // const sentMailboxResult = stmt.run();
-    
-    const stmt = db.prepare("SELECT id FROM Mailboxes WHERE name = 'Sent'");
-    const sentMailboxResult = stmt.get(); // usa .get() para uma única linha
+    // 1. Insert the message into the 'messages' table
 
-    console.log('sentMailboxResult:', sentMailboxResult);
-    
-    // Get the mailbox_id for 'Sent'
-    // const sentMailboxResult = await db.get('SELECT id FROM Mailboxes WHERE name = ?', ['Sent']);
-
-    if (sentMailboxResult && sentMailboxResult.id) {
-      const sentMailboxId = sentMailboxResult.id;
-
-
-      console.log('from, to, subject, messageBody, sentMailboxId:', from, to, subject, messageBody, sentMailboxId);
-      const stmt2 = db.prepare(`
-        INSERT INTO messages (sender, receiver, subject, body, mailbox_id)
-        VALUES (?, ?, ?, ?, ?)
+    const stmt = db.prepare(`
+      INSERT INTO messages (sender_id, receiver_id, subject, body)
+      VALUES (?, ?, ?, ?)
       `);
-      
-      const result = stmt2.run(from, to, subject, messageBody, sentMailboxId);
-        console.log('result:', result);
+    
+      const messageResult = stmt.run(senderId, receiverId, subject, messageBody);
 
-    //   const result = await db.run(
-    //     `
-    //     INSERT INTO messages (sender, receiver, subject, body, mailbox_id)
-    //     VALUES (?, ?, ?, ?, ?)
-    //     `,
-    //     [from, to, subject, messageBody, sentMailboxId]
-    //   );
+    console.log('messageResult:', messageResult);
 
+    const messageId = messageResult.lastInsertRowid;
+
+    if (!messageId) {
        db.close();
-
-      if (result.lastInsertRowid) {
-        return { success: true, messageId: result.lastInsertRowid };
-      } else {
-        throw new Error('Failed to save message.');
-      }
-    } else {
-      await db.close();
-      throw new Error('Could not find the "Sent" mailbox.');
+      return createError({
+        statusCode: 500,
+        statusMessage: 'Failed to save message.',
+      });
     }
+
+    // 2. Insert into 'user_messages' for the sender ('sent' mailbox)
+    const stmt2 = db.prepare(
+      `
+      INSERT INTO user_messages (user_id, message_id, mailbox)
+      VALUES (?, ?, ?)
+      `
+    );
+    const result2 = stmt2.run(senderId, messageId, 'sent')
+
+
+    // 3. Insert into 'user_messages' for the receiver ('inbox' mailbox)
+    const stmt3 =  db.prepare(
+      `
+      INSERT INTO user_messages (user_id, message_id, mailbox)
+      VALUES (?, ?, ?)
+      `
+    );
+    const result3 = stmt3.run(receiverId, messageId, 'inbox')
+
+     db.close();
+
+    return { success: true, messageId: messageId };
+
   } catch (error) {
-    console.error('Error saving message to database:', error);
-    return { success: false, error: error.message };
+    console.error('Error saving message:', error);
+    return createError({
+      statusCode: 500,
+      statusMessage: 'Error saving message to the database.',
+      stack: error.stack, // Only in development, remove in production
+    });
   }
 });

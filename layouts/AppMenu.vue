@@ -34,6 +34,11 @@ const model = ref([
         to: "/" + domain + "/teste"
       },
       {
+        label: "Caixa postal",
+        icon: "pi pi-envelope",
+        to: "/" + domain + "/messages"
+      },
+      {
         label: "Auth",
         icon: "pi pi-fw pi-briefcase",
         items: [
