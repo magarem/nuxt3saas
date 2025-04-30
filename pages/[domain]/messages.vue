@@ -9,7 +9,7 @@
           label="Novo"
           icon="pi pi-plus"
           class="p-button-primary mb-4 mr-4 p-3"
-          @click="isComposing = true"
+          @click="openModal"
         />
         <Dropdown
           id="to"
@@ -37,7 +37,9 @@
           ]"
         >
           <Avatar
-            :image="'/api/' + domain + '/' + email.senderName + '/uploads/avatar.png'" 
+            :image="
+              '/api/' + domain + '/' + email.senderName + '/uploads/avatar.png'
+            "
             :label="getInitials(email.from)"
             class="mr-2"
             shape="circle"
@@ -65,14 +67,14 @@
       _class=" bg-gray-900 border-l border-gray-700 p-4 flex flex-col"
     >
       <div class="flex justify-between items-center mb-4">
-        <Button
+        <!-- <Button
           icon="pi pi-arrow-left"
           class="p-button-rounded p-button-text text-white hover:bg-gray-700 mr-2"
           @click="selectedEmail = null"
-        />
+        /> -->
         <div>
           <Button
-            icon="pi pi-reply"
+            icon="pi pi-arrow-left"
             class="p-button-rounded p-button-text text-white hover:bg-gray-700 mr-2"
             @click="handleReplyEmail"
           />
@@ -85,13 +87,23 @@
       </div>
       <h3 class="text-xl font-semibold mb-2">{{ selectedEmail.subject }}</h3>
       <div class="text-gray-400 mb-2">
-        <div class="mb-2">De: <span class="text-white">{{ selectedEmail.senderName }}</span></div>
-        <div>Data: <i>{{ formatDateLong(selectedEmail.date) }}</i></div>
+        <div class="mb-2">
+          De: <span class="text-white">{{ selectedEmail.senderName }}</span>
+        </div>
+        <div>
+          Data: <i>{{ formatDateLong(selectedEmail.date) }}</i>
+        </div>
       </div>
       <div class="prose prose-sm text-gray-300">
         <p>{{ selectedEmail.body }}</p>
         <!-- <hr class="border-gray-700 my-4"> -->
         <!-- <p>More email content could go here...</p> -->
+        <Button
+          icon="pi pi-arrow-left"
+          label="Responder"
+          class=" p-button-text text-white hover:bg-gray-700 mr-2"
+          @click="handleReplyEmail"
+        />
       </div>
     </div>
     <!-- <aside v-else class="md:col-span-2 bg-gray-900 border-l border-gray-700 p-4 flex items-center justify-center text-gray-500 italic">
@@ -99,6 +111,7 @@
       </aside> -->
 
     <Dialog
+    @show="handleShow"
       v-model:visible="isComposing"
       header="Nova mensagem"
       :style="{ width: '50vw' }"
@@ -138,6 +151,7 @@
       <div class="mb-4">
         <label for="body" class="block text-gray-300 mb-1">Mensagem:</label>
         <Textarea
+        autofocus
           id="body"
           rows="10"
           v-model="composeEmail.body"
@@ -205,6 +219,21 @@ const isComposing = ref(false);
 const usersList = ref([]);
 const selectedRecipient = ref(null);
 
+function handleShow() {
+  nextTick(() => {
+    bodyTextarea.value?.focus()
+    bodyTextarea.value.setSelectionRange(0, 0);
+  })
+}
+
+watch(isComposing, async (val) => {
+  if (val) {
+    nextTick(() => {
+        bodyTextarea.value?.focus()
+    });
+  }
+})
+
 const filteredEmails = computed(() => {
   return emails.value.filter(email => {
     // In a real app, you'd filter based on the selectedMailbox
@@ -221,7 +250,16 @@ async function handleReplyEmail() {
   selectedRecipient.value = selectedEmail.value.senderId;
   // composeEmail.value.to = selectedEmail.value.from;
   composeEmail.value.subject = `Re: ${selectedEmail.value.subject}`;
+//   composeEmail.value.body = `\n
+//   Em ${formatDateLong(selectedEmail.value.date)}, ${selectedEmail.value.senderName} escreveu:\n
+//     ${selectedEmail.value.body}`;
+
   isComposing.value = true;
+  setTimeout(() => bodyTextarea.value.setSelectionRange(0, 0))
+//   nextTick(() => {
+//     // bodyTextarea.value?.focus()
+//     bodyTextarea.value.setSelectionRange(0, 0);
+//   })
 }
 
 async function fetchUsers() {
@@ -318,7 +356,7 @@ const formatDate = date => {
 };
 
 const formatDateLong = date => {
-    return format(date, "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR });
+  return format(date, "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR });
 };
 
 //   const sendNewEmail = () => {
@@ -362,10 +400,10 @@ async function deleteSelectedEmail() {
         // Optionally, if the 'deleted' mailbox is currently viewed, you might want to refetch
         if (selectedMailbox.value !== "deleted") {
           // If not in the deleted box, you might want to remove it from the current view
-        //   emails.value = emails.value.filter(
-        //     email => email.id !== selectedEmail.value.id
-        //   );
-        await fetchEmails();
+          //   emails.value = emails.value.filter(
+          //     email => email.id !== selectedEmail.value.id
+          //   );
+          await fetchEmails();
         } else {
           // If in the deleted box, the list should already reflect the change
           await fetchEmails(); // Or update the pagination/list if needed
@@ -440,14 +478,25 @@ const handleSendNewEmail = async () => {
   }
 };
 
-// Watch when dialog opens
-watch(isComposing, newVal => {
-  if (newVal) {
-    setTimeout(() => {
-      bodyTextarea.value?.$el?.querySelector("textarea")?.focus();
-    }, 100); // small delay to wait for dialog animation
-  }
-});
+function openModal() {
+  isComposing.value = true
+  composeEmail.value.subject = "" 
+  composeEmail.value.body = "" 
+  nextTick(() => {
+    bodyTextarea.value?.focus()
+    // bodyTextarea.value?.$el?.querySelector("textarea")?.focus()
+  })
+}
+
+// // Watch when dialog opens
+// watch(isComposing, newVal => {
+//   if (newVal) {
+//     setTimeout(() => {
+//     //   bodyTextarea.value?.$el?.querySelector("textarea")?.focus();
+//     bodyTextarea.value.focus()
+//     }, 100); // small delay to wait for dialog animation
+//   }
+// });
 
 onMounted(async () => {
   await fetchUsers();
