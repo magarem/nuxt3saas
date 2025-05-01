@@ -1,10 +1,12 @@
 <template>
   <div class="grid md:grid-cols-3 lg:grid-cols-3 gap-4">
     <div
+    :class="{ 'hidden': selectedEmail && isSmallScreen }"
       class="col-span-1"
       __class=" bg-gray-900 border-r border-gray-700 p-4 flex flex-col"
     >
-      <div class="flex justify-between items-center mb-4">
+      <div  class="flex justify-between items-center mb-4">
+        
         <Button
           label="Novo"
           icon="pi pi-plus"
@@ -77,7 +79,7 @@
           <Button
             icon="pi pi-arrow-left"
             class="p-button-rounded p-button-text text-white hover:bg-gray-700 mr-2"
-            @click="handleReplyEmail"
+            @click="selectedEmail=false"
           />
           <Button
             icon="pi pi-trash"
@@ -180,6 +182,8 @@
 <script setup>
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+const innerWidth = ref(0);
+const isSmallScreen = computed(() => innerWidth.value < 500);
 const toast = useToast();
 const route = useRoute();
 const domain = route.params.domain;
@@ -193,7 +197,9 @@ const mailboxes = ref([
 ]);
 const labels = ref(["Important", "Work", "Personal"]);
 const emails = ref([]);
-
+const updateInnerWidth = () => {
+  innerWidth.value = window.innerWidth;
+};
 const currentUser = ref(null);
 const error = ref(null);
 
@@ -500,9 +506,15 @@ function openModal() {
 // });
 
 onMounted(async () => {
+  //  innerWidth.value = window.innerWidth
   await fetchUsers();
   await fetchUser();
   await fetchEmails();
+
+  if (typeof window !== 'undefined') { // Check if running on the client-side
+    updateInnerWidth();
+    // window.addEventListener('resize', updateInnerWidth);
+  }
 });
 </script>
 
