@@ -153,7 +153,7 @@ const primaryDark = 'indigo-700';
       if (response.success) {
         toast.add({ severity: 'success', summary: 'Sucesso', detail: response.message || 'Registro bem-sucedido. Redirecionando...', life: 3000 });
         await new Promise(resolve => setTimeout(resolve, 1000));
-        router.push(`/${domain}/registerSuccess`);
+        router.push(`/${domain}/auth/registerSuccess`);
       } else {
         error.value = response.message || 'Falha ao registrar. Tente novamente.';
         toast.add({ severity: 'error', summary: 'Erro', detail: error.value, life: 3000 });

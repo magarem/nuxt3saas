@@ -41,7 +41,7 @@ const toggle = event => {
 };
 
 const profileEdit = async () => {
-  navigateTo("/" + domain + "/profile");
+  navigateTo(`/${domain}/${ret.value.user?.username}/profile`);
 };
 
 const logout = async () => {

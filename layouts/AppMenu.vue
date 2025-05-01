@@ -3,8 +3,16 @@ import { ref } from "vue";
 
 import AppMenuItem from "./AppMenuItem.vue";
 
-function getdomainFromHref(href) {
+function getDomainFromHref(href) {
   const match = href.split("/")[1];
+  if (match) {
+    return match;
+  }
+  return null;
+}
+
+function getUserFromHref(href) {
+  const match = href.split("/")[2];
   if (match) {
     return match;
   }
@@ -13,7 +21,13 @@ function getdomainFromHref(href) {
 
 
 const route = useRoute();
-const domain = getdomainFromHref(route.fullPath || "");
+
+const router = useRouter();
+const currentPath = ref(router.currentRoute.value.path);
+
+
+const domain = currentPath.value.split("/")[1];
+const user = currentPath.value.split("/")[2];
 const domain_ = capitalizeFirstLetter(domain);
 console.log("domain>>>>:", domain);
 console.log("route.fullPath>>>>:", route.fullPath);
@@ -26,36 +40,36 @@ const model = ref([
       {
         label: domain_,
         icon: "pi pi-fw pi-home",
-        to: "/" + domain + "/dashboard"
+        to: `/${domain}/${user}/dashboard`
       },
       {
         label: "Teste",
         icon: "pi pi-fw pi-id-card",
-        to: "/" + domain + "/teste"
+        to: `/${domain}/${user}/teste`
       },
       {
         label: "Caixa postal",
         icon: "pi pi-envelope",
-        to: "/" + domain + "/messages"
+        to: `/${domain}/${user}/messages`
       },
       {
-        label: "Auth",
+        label: "Controle de acesso",
         icon: "pi pi-fw pi-briefcase",
         items: [
           {
             label: "Usuários",
             icon: "pi pi-fw pi-id-card",
-            to: "/" + domain + "/users"
+            to: `/${domain}/${user}/users`
           },
           {
             label: "Categoria do usuário",
             icon: "pi pi-fw pi-id-card",
-            to: "/" + domain + "/roles"
+            to: `/${domain}/${user}/roles`
           },
           {
             label: "Páginas",
             icon: "pi pi-fw pi-id-card",
-            to: "/" + domain + "/pages"
+            to: `/${domain}/${user}/pages`
           }
           // { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: '/'+domain + '/lista' }
         ]
@@ -63,6 +77,12 @@ const model = ref([
     ]
   }
 ]);
+
+watch(() => router.currentRoute.value.path, (newPath) => {
+  currentPath.value = newPath;
+});
+
+
 </script>
 
 <template>

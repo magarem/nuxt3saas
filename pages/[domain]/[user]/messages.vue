@@ -1,8 +1,8 @@
 <template>
-  <div class="grid grid-cols-8 gap-6">
+  <div class="grid md:grid-cols-3 lg:grid-cols-3 gap-4">
     <div
-      class="col-span-3"
-      _class=" bg-gray-900 border-r border-gray-700 p-4 flex flex-col"
+      class="col-span-1"
+      __class=" bg-gray-900 border-r border-gray-700 p-4 flex flex-col"
     >
       <div class="flex justify-between items-center mb-4">
         <Button
@@ -44,7 +44,8 @@
             class="mr-2"
             shape="circle"
             size="xlarge"
-            :class="!email.isRead ? 'border-2 border-blue-500' : ''"
+            :class="true ? 'border-2 border-blue-500' : ''"
+            style="width: 55px; height: 55px;"
           />
           <div class="flex-grow">
             <div class="flex justify-between items-center">
@@ -63,8 +64,8 @@
 
     <div
       v-if="selectedEmail"
-      class="col-span-5"
-      _class=" bg-gray-900 border-l border-gray-700 p-4 flex flex-col"
+      class="md:col-span-2"
+      __class=" bg-gray-900 border-l border-gray-700 p-4 flex flex-col"
     >
       <div class="flex justify-between items-center mb-4">
         <!-- <Button

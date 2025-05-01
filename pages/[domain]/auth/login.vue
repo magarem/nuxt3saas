@@ -17,8 +17,8 @@ const router = useRouter();
 const domain = route.params.domain;
 const domainExists = ref(true); // Assume true initially
 
-const linkToRegister = "/" + domain + "/register";
-const linkToRemember = "/" + domain + "/forgotPasswordEmail";
+const linkToRegister = `/${domain}/auth/register`
+const linkToRemember = `forgotPasswordEmail`
 
 const navigateToRegister = () => {
   router.push(linkToRegister);
@@ -52,11 +52,13 @@ const login = async () => {
       body: { username: username.value, password: password.value }
     });
 
+
+    console.log('response>>login>>:', response);
     if (response.success) {
       // Armazena o token JWT (por exemplo, em localStorage)
       // localStorage.setItem('token', response.token);
       // Redireciona para a página protegida
-      navigateTo({ path: "/" + domain + "/dashboard" });
+      navigateTo({ path: `/${domain}/${username.value}/dashboard` });
     } else {
       error.value = response.message || response;
     }

@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     if (result.changes > 0) {
       // 5. Gerar token de verificação de email
       const verificationToken = crypto.randomBytes(20).toString("hex");
-      const verificationLink = `https://suryanet.site/${domain}/verify-email/${verificationToken}`;
+      const verificationLink = `https://suryanet.site/${domain}/auth/verify-email/${verificationToken}`;
       // Adapte a URL
 
       // 6. Salvar o token no banco de dados (associado ao usuário)

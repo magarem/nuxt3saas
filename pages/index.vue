@@ -2,7 +2,7 @@
   <div>
     <div class="flex justify-center items-center h-screen">
       <div class="text-center">
-        <h1 class="text-4xl font-bold mb-4">Nuxt3 plataforma saas</h1>
+        <h1 class="text-4xl font-bold mb-4">SuryaNet</h1>
         <h2 class="text-4xl font-bold mb-4">Bem-vindo!</h2>
         <p class="text-lg">Defina o domínio do sistema na URL.</p>
         <a

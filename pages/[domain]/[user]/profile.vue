@@ -141,10 +141,11 @@ import Button from "primevue/button";
 import ProfilePictureUploader from "~/components/ProfilePictureUploader.vue";
 
 import Dialog from "primevue/dialog";
-const toast = useToast();
+  
 const route = useRoute();
 const router = useRouter();
 const domain = route.params.domain;
+const toast = useToast();
 
 const profile = ref({
   name: "",
@@ -211,7 +212,8 @@ async function updatePassword() {
       body: {
         userId: profile.value.id,
         currentPassword: changePasswordForm.value.currentPassword,
-        newPassword: changePasswordForm.value.newPassword
+        newPassword: changePasswordForm.value.newPassword,
+        confirmPassword: changePasswordForm.value.confirmPassword
       }
     });
 

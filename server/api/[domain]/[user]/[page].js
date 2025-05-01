@@ -11,7 +11,7 @@ function ensureArray(value) {
 }
 
 export default defineEventHandler(async (event) => {
-  const { domain, page } = getRouterParams(event); // Use desestruturação para clareza
+  const { domain, user, page } = getRouterParams(event); // Use desestruturação para clareza
   // const dbPath = path.resolve(`./server/data/${domain}.db`);
   // const dbPath =  path.join(process.cwd(), 'server/data', `${domain}.db`);
   // if (!fs.existsSync(dbPath)) {
@@ -22,9 +22,11 @@ export default defineEventHandler(async (event) => {
   const authToken = getCookie(event, 'auth_token');
 
   if (!authToken) {
-    return sendRedirect(event, `/${domain}/forbidden`);
+    return sendRedirect(event, `/${domain}/${user}/forbidden`);
   }
-
+  if (  !db) {
+    return sendError(event, createError({ statusCode: 500, statusMessage: `Database not found for domain: ${domain}` }));
+  } 
   try {
     const decoded = jwt.verify(authToken, process.env.JWT_SECRET || 'chave_secreta');
 

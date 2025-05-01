@@ -1,22 +1,29 @@
 // server/api/[domain]/verify-email/[token].get.ts
 import { defineEventHandler, getRouterParams, setResponseStatus, sendRedirect } from 'h3';
-import Database from 'better-sqlite3';
+import { getDatabase } from '~/server/utils/db'; // Import your database utility
 
 export default defineEventHandler(async (event) => {
   const { domain, token } = getRouterParams(event);
- 
+  let db;
+
   console.log('Verificando email com token:', token);
   console.log('Domínio:', domain);
-  
+
   try {
-    const db = getDatabase(domain);
+    db = getDatabase(domain);
+
+    if (!db) {
+      setResponseStatus(event, 500);
+      return { success: false, message: 'Erro ao conectar ao banco de dados.' };
+    }
 
     // 1. Verificar se o token existe e não expirou
-    const user = db.prepare(`
+    const stmtSelect = db.prepare(`
       SELECT id, nome, email, verificationToken, verificationTokenExpiry
       FROM users
       WHERE verificationToken = ? AND verificationTokenExpiry > ?
-    `).get(token, Date.now());
+    `);
+    const user = stmtSelect.get(token, Date.now());
 
     console.log('user:', user);
     if (!user) {
@@ -26,19 +33,23 @@ export default defineEventHandler(async (event) => {
     }
 
     // 2. Atualizar o status do usuário
-    // const statement = db.prepare('UPDATE users SET status = ?, verificationToken = NULL, verificationTokenExpiry = NULL WHERE id = ?');
-    const statement = db.prepare('UPDATE users SET status = ? WHERE id = ?');
-    statement.run('active', user.id);
+    const stmtUpdate = db.prepare('UPDATE users SET status = ? WHERE id = ?');
+    const result = stmtUpdate.run('active', user.id);
+
+    if (result.changes === 0) {
+      db.close();
+      console.warn('Nenhum usuário atualizado com o ID:', user.id);
+      return { success: true, message: 'Conta já estava ativa ou erro ao atualizar.' };
+    }
 
     // 3. Redirecionar o usuário para a página de login
     db.close();
-    // const loginUrl = `/${domain}/registerEmailConfirmSuccess`; // Adapte a URL da sua página de login
+    const loginUrl = `/${domain}/auth/login`; // Adapte a URL da sua página de login
     // sendRedirect(event, loginUrl, 302); // Redirecionamento temporário
 
-    // Nota: O sendRedirect não interrompe a execução do código de forma síncrona.
-    // Se você tiver alguma lógica adicional após o sendRedirect, ela será executada.
-    // No entanto, o navegador do cliente será redirecionado para a nova URL.
-    return { success: true, message: 'ok!'}; // Importante para indicar que a rota terminou aqui
+    // O sendRedirect envia a resposta e interrompe a execução.
+    // Não é necessário um retorno adicional aqui, mas para consistência, podemos incluir.
+    return { success: true, message: 'Email verificado com sucesso. Redirecionando para login.' };
 
   } catch (error) {
     console.error('Erro ao verificar email:', error);
