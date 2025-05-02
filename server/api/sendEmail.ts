@@ -9,8 +9,7 @@ export default defineEventHandler(async (event) => {
     console.log('req:', req);
 
     const mailerSend = new MailerSend({
-    // apiKey: "mlsn.813418e9d77877ab64f06d6b1893af5758740d58099fafd6f837ed9dee78ce43",
-    apiKey: "mlsn.4f89879fe6b402e097d453d29e99fcdd0bcdbce01744581ab48819b359098ebe",
+    apiKey: "",
     });
 
     const sentFrom = new Sender("magaweb@magaweb.com.br", "Magaweb");
