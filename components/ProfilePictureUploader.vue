@@ -1,30 +1,12 @@
 <template>
   <div>
-    <!-- <div class="mb-4">
-      <img
-        v-if="currentImageUrl"
-        :src="currentImageUrl"
-        alt="Foto de Perfil Atual"
-        class="w-20 h-20 rounded-full"
-      />
-      <div v-else class="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
-        <span class="text-gray-500">Sem Foto</span>
-      </div>
-    </div> -->
-
-    <!-- <label class="block text-gray-700 font-bold mb-2">
-      Selecionar Nova Foto de Perfil:
-    </label> -->
-    
-  <!-- Label estilizado como botão -->
-  <label
+    <label
       for="upload-input"
       class="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-block"
     >
       Selecionar Foto
     </label>
 
-    <!-- Input escondido -->
     <input
       id="upload-input"
       type="file"
@@ -32,16 +14,9 @@
       accept="image/*"
       class="hidden"
     />
-    
-    <!-- <button
-      @click="uploadFile"
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
-      >
-      Enviar Foto
-    </button> -->
-    
+
     <div v-if="uploading" class="mt-4">
-      Enviando...
+      Reduzindo e enviando...
     </div>
     <div v-if="uploadSuccess" class="mt-4 text-green-500">
       Foto enviada com sucesso!
@@ -55,7 +30,6 @@
 <script setup>
 import { ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useRoute } from 'vue-router'; // Importe useRoute para acessar parâmetros da rota
 
 const toast = useToast();
 const file = ref(null);
@@ -64,24 +38,19 @@ const uploadSuccess = ref(false);
 const uploadError = ref(false);
 const uploadErrorMessage = ref('');
 
-let props = defineProps(['domain', 'username'])
+let props = defineProps(['domain', 'username']);
 const emit = defineEmits(['update:imageUrl']);
 
-// Construa a URL da foto de perfil atual
 const currentImageUrl = ref(`/api/${props.domain}/${props.username}/avatar.png?${Date.now()}`);
-
-// const handleFileChange = (event) => {
-//   file.value = event.target.files[0];
-// };
 
 const handleFileChange = (event) => {
   file.value = event.target.files[0];
   if (file.value) {
-    uploadFile(); // 🔄 Envia o arquivo automaticamente
+    reduceImageAndUpload(); // 🚀 Chama a função para reduzir e enviar
   }
 };
 
-const uploadFile = async () => {
+const reduceImageAndUpload = async () => {
   if (!file.value) {
     toast.add({ severity: 'warn', summary: 'Aviso', detail: 'Selecione uma foto para enviar.', life: 3000 });
     return;
@@ -92,11 +61,12 @@ const uploadFile = async () => {
   uploadError.value = false;
   uploadErrorMessage.value = '';
 
-  const formData = new FormData();
-  formData.append('foto', file.value);
-
   try {
-    const response = await fetch(`/api/upload`, { // Inclua o username na rota
+    const compressedFile = await compressImage(file.value, 0.7); // ⚙️ Reduz a qualidade para 70% (ajuste conforme necessário)
+    const formData = new FormData();
+    formData.append('foto', compressedFile, file.value.name); // ✅ Envia o arquivo comprimido com o nome original
+
+    const response = await fetch(`/api/upload`, {
       method: 'POST',
       body: formData,
     });
@@ -110,7 +80,7 @@ const uploadFile = async () => {
 
     if (data.success) {
       uploadSuccess.value = true;
-      currentImageUrl.value = `/api/${props.domain}/${props.username}/uploads/avatar.png?${Date.now()}`; // Atualize a URL da imagem atual
+      currentImageUrl.value = `/api/${props.domain}/${props.username}/uploads/avatar.png?${Date.now()}`;
       emit('update:imageUrl', currentImageUrl.value);
     } else {
       uploadError.value = true;
@@ -125,4 +95,51 @@ const uploadFile = async () => {
   }
 };
 
+// Função para reduzir a imagem localmente
+const compressImage = (file, quality) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxWidth = 150; // Defina a largura máxima desejada (ajuste conforme necessário)
+        const maxHeight = 150; // Defina a altura máxima desejada (ajuste conforme necessário)
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name, { type: file.type }));
+          } else {
+            reject(new Error('Falha ao comprimir a imagem.'));
+          }
+        }, file.type, quality);
+      };
+      img.onerror = (error) => reject(error);
+      img.src = event.target.result;
+    };
+
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
 </script>
