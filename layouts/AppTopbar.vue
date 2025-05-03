@@ -3,8 +3,9 @@
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 
 const route = useRoute();
+const router = useRouter();
 const { data: ret } = await useFetch("/api/user");
-const domain = ret.value.user?.domain
+const domain = ret.value.user?.domain;
 if (!ret.value?.user) {
   // Redireciona para a página de login
   navigateTo("/" + domain + "/auth/login");
@@ -32,6 +33,12 @@ const items = ref([
   }
 ]);
 
+const notificationCount = ref(3); // exemplo
+const onClick = () => {
+  // alert(`/${domain}/${ret.value?.user.username}/messages`)
+  router.push(`/${domain}/${ret.value?.user.username}/messages`);
+};
+
 // onMounted(() => {
 //     items.value[0].label = ret.value.user.nome;
 // });
@@ -49,6 +56,17 @@ const logout = async () => {
   useCookie("auth_token").value = null;
   navigateTo("/" + domain + "/auth/login");
 };
+
+const { data, error: fetchError } = await useFetch(
+  `/api/${domain}/messages/totalUnreadMessages`,
+  {
+    method: "GET"
+  }
+);
+
+console.log("Total de mensagens não lidas:", data.value);
+
+notificationCount.value = data.value;
 </script>
 
 <template>
@@ -61,18 +79,14 @@ const logout = async () => {
         <i class="pi pi-bars text-xl"></i>
       </button>
       <router-link to="/" class="layout-topbar-logo">
-        <img
-          src="/assets/logo2.png"
-          alt="SuryaNet"
-          class="h-6 w-auto"
-        />
+        <img src="/assets/logo2.png" alt="SuryaNet" class="h-6 w-auto" />
       </router-link>
-      <div ></div>
+      <div></div>
     </div>
 
     <div class="layout-topbar-actions">
       <div class="layout-config-menu">
-        <button
+        <!-- <button
           type="button"
           class="layout-topbar-action"
           @click="toggleDarkMode"
@@ -80,7 +94,24 @@ const logout = async () => {
           <i
             :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"
           ></i>
-        </button>
+        </button> -->
+        
+        <button
+        v-if="notificationCount > 0"
+          class="notification-bell-icon"
+          @click="onClick"
+        >
+        <i class="pi pi-bell"></i>
+        
+
+        <Badge
+        size="small"
+          @click="onClick"
+          v-if="notificationCount > 0"
+          :value="notificationCount"
+          class="absolute top-3 right-20 p-0"
+        />
+      </button>
         <button type="button" class="layout-topbar-action" @click="toggle">
           <i class="pi pi-user"></i>
           <!-- <span>Messages</span> -->
@@ -97,6 +128,7 @@ const logout = async () => {
                     <AppConfigurator />
                 </div> -->
       </div>
+
       <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
       <!-- <button
                 class="layout-topbar-menu-button layout-topbar-action"
@@ -107,3 +139,13 @@ const logout = async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.badge {
+  transform: translate(50%, -50%);
+}
+
+.notification-bell-icon .pi-bell {
+  font-size: 1.5em; /* Ajuste o tamanho desejado aqui */
+}
+</style>

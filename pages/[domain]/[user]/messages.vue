@@ -331,6 +331,8 @@ async function fetchEmails() {
         apiUrl += "&excludeDeleted=true"; // Or a similar parameter
       }
 
+      console.log("Fetching emails from:", apiUrl);
+      
       const response = await fetch(apiUrl);
       const data = await response.json();
       console.log("Fetched emails:", data);
@@ -375,7 +377,7 @@ const selectMailbox = mailboxName => {
   fetchEmails();
 };
 
-const selectEmail = email => {
+const selectEmail = async (email) => {
   console.log("email:", email);
   selectedEmail.value = email;
   replyEmailBody.value = `
@@ -388,6 +390,14 @@ const selectEmail = email => {
   ${selectedEmail.value.body}
   `;
   email.isRead = true; // Mark as read when selected (for UI purposes)
+
+  console.log("selectedEmail.value:", selectedEmail.value);
+  
+  const { data, error: fetchError } = await useFetch(`/api/${domain}/messages/setMessageIsRead/${selectedEmail.value.id}`, {
+      method: 'PUT',
+    });
+
+    console.log("data:", data);
 };
 
 const getInitials = name => {
@@ -530,15 +540,6 @@ function openModal() {
   });
 }
 
-// // Watch when dialog opens
-// watch(isComposing, newVal => {
-//   if (newVal) {
-//     setTimeout(() => {
-//     //   bodyTextarea.value?.$el?.querySelector("textarea")?.focus();
-//     bodyTextarea.value.focus()
-//     }, 100); // small delay to wait for dialog animation
-//   }
-// });
 
 onBeforeMount(async () => {
   //  innerWidth.value = window.innerWidth
