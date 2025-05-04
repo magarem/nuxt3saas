@@ -53,11 +53,11 @@
           />
           <div class="flex-grow" style="margin-top: -2px;">
             <div class="flex justify-between items-center">
-              <span class="block text-[15px]">{{ email.senderName }}</span>
-              <span class="text-xs">{{ formatDate(email.date) }}</span>
+              <span class="block text-[16px]">{{ email.senderName }}</span>
+              <span class="text-xs text-[13px]">{{ formatDate(email.date) }}</span>
             </div>
-            <span class="block text-sm font-light">{{ email.subject }}</span>
-            <span class="block text-sm font-light">{{ email.body.substring(0, 30) }}{{ email.body.length > 30 ? '...' : '' }}</span>
+            <span class="block text-sm font-light text-[13px]">{{ email.subject }}</span>
+            <span class="block text-sm font-light text-[13px]">{{ email.body.substring(0, 30) }}{{ email.body.length > 30 ? '...' : '' }}</span>
           </div>
         </li>
         <li v-if="filteredEmails.length === 0" class="p-3 text-gray-500">
