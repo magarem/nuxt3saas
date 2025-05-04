@@ -1,35 +1,39 @@
 <template>
-  <div class="grid md:grid-cols-3 lg:grid-cols-3 gap-4">
+  <div style="margin: 0 -20px 0 -20px;" class="grid md:grid-cols-3 lg:grid-cols-3 gap-4">
     <div
       :class="{ hidden: selectedEmail && isSmallScreen }"
       class="col-span-1"
       __class=" bg-gray-900 border-r border-gray-700 p-4 flex flex-col"
     >
-      <div class="flex justify-between items-center mb-4">
-        <Button
-          label="Novo"
-          icon="pi pi-plus"
-          class="p-button-primary mb-4 mr-4 p-3"
-          @click="openModal"
-        />
-        <Dropdown
-          id="to"
-          v-model="selectedMailbox"
-          @change="selectMailbox"
-          :options="mailboxes"
-          optionLabel="name"
-          optionValue="name"
-          placeholder="Selecione"
-          class="bg-gray-700 text-white border-gray-600 mb-3 p-1"
-        />
-      </div>
+    <div class="flex justify-between items-center mb-4 px-2 space-x-2">
+  <span class="text-[18px] font-semibold whitespace-nowrap">Caixa postal</span>
+
+  <Dropdown
+    id="to"
+    v-model="selectedMailbox"
+    @change="selectMailbox"
+    :options="mailboxes"
+    optionLabel="name"
+    optionValue="name"
+    placeholder="Selecione"
+    class="bg-gray-700 text-white border-gray-600 text-sm"
+    style="min-width: 110px;"
+  />
+
+  <Button
+    icon="pi pi-plus"
+    class="p-button-sm p-button-primary"
+    @click="openModal"
+  />
+</div>
+
       <ul class="overflow-y-auto h-[calc(100vh - 180px)]">
         <li
           v-for="email in sortedEmails"
           :key="email.id"
           @click="selectEmail(email)"
           :class="[
-            'p-3 rounded cursor-pointer border-b border-gray-700',
+            'p-3 rounded cursor-pointer ',
             selectedEmail?.id === email.id
               ? 'bg-blue-900 text-blue-300'
               : 'hover:bg-gray-800',
@@ -45,16 +49,15 @@
             class="mr-2"
             shape="circle"
             size="xlarge"
-            :class="true ? 'border-2 border-blue-500' : ''"
-            style="width: 55px; height: 55px;"
+            style="width: 57px; height: 57px; margin-right: 10px;"
           />
-          <div class="flex-grow">
+          <div class="flex-grow" style="margin-top: -2px;">
             <div class="flex justify-between items-center">
-              <span class="block">{{ email.senderName }}</span>
+              <span class="block text-[15px]">{{ email.senderName }}</span>
               <span class="text-xs">{{ formatDate(email.date) }}</span>
             </div>
-            <span class="block text-sm">{{ email.subject }}</span>
-            <span class="block text-sm truncate">{{ email.body.substring(0, 30) }}{{ email.body.length > 30 ? '...' : '' }}</span>
+            <span class="block text-sm font-light">{{ email.subject }}</span>
+            <span class="block text-sm font-light">{{ email.body.substring(0, 30) }}{{ email.body.length > 30 ? '...' : '' }}</span>
           </div>
         </li>
         <li v-if="filteredEmails.length === 0" class="p-3 text-gray-500">
@@ -389,15 +392,16 @@ const selectEmail = async (email) => {
   
   ${selectedEmail.value.body}
   `;
+
   email.isRead = true; // Mark as read when selected (for UI purposes)
 
   console.log("selectedEmail.value:", selectedEmail.value);
   
   const { data, error: fetchError } = await useFetch(`/api/${domain}/messages/setMessageIsRead/${selectedEmail.value.id}`, {
-      method: 'PUT',
-    });
+    method: 'PUT',
+  });
 
-    console.log("data:", data);
+  console.log("data:", data);
 };
 
 const getInitials = name => {
