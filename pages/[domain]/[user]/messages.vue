@@ -262,7 +262,7 @@ const selectedRecipient = ref(null);
 function handleShow() {
   nextTick(() => {
     // bodyTextarea.value?.focus();
-    bodyTextarea.value.setSelectionRange(0, 0);
+    // bodyTextarea.value.setSelectionRange(0, 0);
   });
 }
 
