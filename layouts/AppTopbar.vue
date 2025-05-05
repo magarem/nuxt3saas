@@ -10,7 +10,7 @@ const unreadNotificationsCount = ref(0);
 let websocket = null;
 
 onMounted(() => {
-  websocket = new WebSocket("wss://suryanet.site/ws:3002"); // Endereço do seu servidor WebSocket
+  websocket = new WebSocket("wss://suryanet.site/ws/"); // Endereço do seu servidor WebSocket
 
   websocket.onopen = async () => {
     console.log("Conectado ao WebSocket.");
