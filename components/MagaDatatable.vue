@@ -57,7 +57,7 @@
       type: Array,
       required: true,
     },
-    rows: {
+    rowss: {
       type: Array,
       required: true,
     },

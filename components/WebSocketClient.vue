@@ -28,7 +28,7 @@
   });
   
   function connectWebSocket() {
-    websocket.value = new WebSocket('ws://suryanet.site/ws:3002'); // Use o endereço do seu servidor WebSocket
+    websocket.value = new WebSocket('wss://suryanet.site/wss:3002'); // Use o endereço do seu servidor WebSocket
   
     websocket.value.onopen = () => {
       console.log('Conectado ao WebSocket');
