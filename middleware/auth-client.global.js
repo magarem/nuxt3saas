@@ -45,7 +45,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		"/reset-password",
 		"/api",
 		"/messages",
-		"/domain-not-exists"
+		"/domain-not-exists",
+		"/websocket-test"
 	];
 
 	if (allowedPaths.some(path => to.path.includes(path))) {

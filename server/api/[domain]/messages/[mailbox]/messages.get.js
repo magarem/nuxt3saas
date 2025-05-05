@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
         m.subject,
         m.body,
         strftime('%Y-%m-%dT%H:%M:%fZ', m.sent_at) AS date,
-        um.is_read,
+        m.is_read,
         um.is_deleted,
         strftime('%Y-%m-%dT%H:%M:%fZ', um.deleted_at) AS deleted_at,
         um.mailbox AS user_mailbox

@@ -1,10 +1,70 @@
 <script setup>
+import { da } from "date-fns/locale";
+
 // import AppConfigurator from './AppConfigurator.vue';
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 
 const route = useRoute();
 const router = useRouter();
+const unreadNotificationsCount = ref(0);
+let websocket = null;
+
+onMounted(() => {
+  websocket = new WebSocket("ws://localhost:3001"); // Endereço do seu servidor WebSocket
+
+  websocket.onopen = async () => {
+    console.log("Conectado ao WebSocket.");
+    //     const { data, error: fetchError } = await useFetch(
+    //   `/api/${domain}/messages/totalUnreadMessages`,
+    //   {
+    //     method: "GET"
+    //   }
+    // );
+
+    // console.log("Total de mensagens não lidas:", data.value);
+
+    // unreadNotificationsCount.value = data.value;
+  };
+
+  websocket.onmessage = event => {
+    try {
+      const data = JSON.parse(event.data);
+      console.log(data);
+    
+      if (data && data.type == "unreadCountUpdatedPlus" && data.receiverId == userId.value) {
+        unreadNotificationsCount.value++;
+      }
+
+      if (
+        data &&
+        data.type == "unreadCountUpdated" &&
+        data.unreadCount !== undefined
+      ) {
+        unreadNotificationsCount.value = data.unreadCount;
+      }
+    } catch (error) {
+      console.error("Erro ao processar mensagem WebSocket:", error);
+    }
+  };
+
+  websocket.onclose = () => {
+    console.log("Desconectado do WebSocket.");
+    // Lógica para reconectar se necessário
+  };
+
+  websocket.onerror = error => {
+    console.error("Erro no WebSocket:", error);
+  };
+});
+
+onUnmounted(() => {
+  if (websocket) {
+    websocket.close();
+  }
+});
+
 const { data: ret } = await useFetch("/api/user");
+const userId = ref(ret.value.user?.id);
 const domain = ret.value.user?.domain;
 if (!ret.value?.user) {
   // Redireciona para a página de login
@@ -33,7 +93,6 @@ const items = ref([
   }
 ]);
 
-const notificationCount = ref(3); // exemplo
 const onClick = () => {
   // alert(`/${domain}/${ret.value?.user.username}/messages`)
   router.push(`/${domain}/${ret.value?.user.username}/messages`);
@@ -56,17 +115,6 @@ const logout = async () => {
   useCookie("auth_token").value = null;
   navigateTo("/" + domain + "/auth/login");
 };
-
-const { data, error: fetchError } = await useFetch(
-  `/api/${domain}/messages/totalUnreadMessages`,
-  {
-    method: "GET"
-  }
-);
-
-console.log("Total de mensagens não lidas:", data.value);
-
-notificationCount.value = data.value;
 </script>
 
 <template>
@@ -95,23 +143,23 @@ notificationCount.value = data.value;
             :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"
           ></i>
         </button> -->
-        
+
         <button
-        v-if="notificationCount > 0"
+          v-if="unreadNotificationsCount > 0"
           class="notification-bell-icon"
           @click="onClick"
         >
-        <i class="pi pi-bell"></i>
-        
+          <i class="pi pi-bell"></i>
 
-        <Badge
-        size="small"
-          @click="onClick"
-          v-if="notificationCount > 0"
-          :value="notificationCount"
-          class="absolute top-3 right-20 p-0"
-        />
-      </button>
+          <Badge
+            size="small"
+            @click="onClick"
+            v-if="unreadNotificationsCount > 0"
+            :value="unreadNotificationsCount"
+            class="absolute top-3 right-20 p-0"
+            severity="danger"
+          />
+        </button>
         <button type="button" class="layout-topbar-action" @click="toggle">
           <i class="pi pi-user"></i>
           <!-- <span>Messages</span> -->

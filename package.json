@@ -35,7 +35,8 @@
     "tailwindcss-primeui": "^0.6.1",
     "uuid": "^11.1.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^10.3.1",

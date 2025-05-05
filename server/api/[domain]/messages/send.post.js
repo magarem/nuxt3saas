@@ -1,6 +1,6 @@
  // server/api/messages/send.post.js
 import { getDatabase } from '~/server/utils/db';
-
+import { wss } from '~/server/utils/websocket-server';
 export default defineEventHandler(async (event) => {
   const domain = event.context.params.domain;
 
@@ -62,6 +62,17 @@ export default defineEventHandler(async (event) => {
     const result3 = stmt3.run(receiverId, messageId, 'inbox')
 
      db.close();
+
+     wss.clients.forEach(client => {
+      // console.log("client::::::", client)
+      if (client.readyState === 1) {
+
+      
+      
+        client.send(JSON.stringify({ type: 'unreadCountUpdatedPlus', receiverId: receiverId }));
+        client.send(JSON.stringify({ type: 'newMail', senderId, receiverId, subject, messageBody  }));
+      }
+    });
 
     return { success: true, messageId: messageId };
 

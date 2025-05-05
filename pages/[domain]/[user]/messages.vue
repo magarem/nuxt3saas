@@ -41,6 +41,7 @@
             'flex items-start space-x-2'
           ]"
         >
+        
           <Avatar
             :image="
               '/api/' + domain + '/' + email.senderName + '/uploads/avatar.png'
@@ -219,6 +220,7 @@ const domain = route.params.domain;
 const bodyTextarea = ref(null);
 let isReplyEmail = ref(false);
 let replyEmailBody = ref("");
+let websocket = null;
 // Dummy Data (Replace with your actual data fetching)
 const mailboxes = ref([
   { icon: "", name: "inbox" },
@@ -259,7 +261,7 @@ const selectedRecipient = ref(null);
 
 function handleShow() {
   nextTick(() => {
-    bodyTextarea.value?.focus();
+    // bodyTextarea.value?.focus();
     bodyTextarea.value.setSelectionRange(0, 0);
   });
 }
@@ -401,7 +403,7 @@ const selectEmail = async (email) => {
     method: 'PUT',
   });
 
-  console.log("data:", data);
+  console.log("data--->>>>>>>:", data.value);
 };
 
 const getInitials = name => {
@@ -556,6 +558,48 @@ onBeforeMount(async () => {
     updateInnerWidth();
     // window.addEventListener('resize', updateInnerWidth);
   }
+});
+
+onMounted(() => {
+  websocket = new WebSocket('ws://localhost:3001'); // Endereço do seu servidor WebSocket
+
+  websocket.onopen = async () => {
+    console.log('Conectado ao WebSocket.');
+//     const { data, error: fetchError } = await useFetch(
+//   `/api/${domain}/messages/totalUnreadMessages`,
+//   {
+//     method: "GET"
+//   }
+// );
+
+// console.log("Total de mensagens não lidas:", data.value);
+
+// unreadNotificationsCount.value = data.value;
+  };
+
+  websocket.onmessage = async (event) => {
+    
+    try {
+      const data = JSON.parse(event.data);
+      if (data && data.type == "newMail"){
+        if (data.receiverId == currentUser.value.id) {
+          await fetchEmails();
+        }
+      }
+     
+    } catch (error) {
+      console.error('Erro ao processar mensagem WebSocket:', error);
+    }
+  };
+
+  websocket.onclose = () => {
+    console.log('Desconectado do WebSocket.');
+    // Lógica para reconectar se necessário
+  };
+
+  websocket.onerror = (error) => {
+    console.error('Erro no WebSocket:', error);
+  };
 });
 </script>
 
