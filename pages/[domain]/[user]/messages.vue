@@ -561,7 +561,7 @@ onBeforeMount(async () => {
 });
 
 onMounted(() => {
-  websocket = new WebSocket('wss://suryanet.site/ws:3001'); // Endereço do seu servidor WebSocket
+  websocket = new WebSocket('wss://suryanet.site/ws:3002'); // Endereço do seu servidor WebSocket
 
   websocket.onopen = async () => {
     console.log('Conectado ao WebSocket.');

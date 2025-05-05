@@ -1,7 +1,7 @@
 // server/utils/websocket-server.js
 import { WebSocketServer } from 'ws';
 
-const wss = new WebSocketServer({ port: 3001 }); // Use a porta que você configurou para o WebSocket
+const wss = new WebSocketServer({ port: 3002 }); // Use a porta que você configurou para o WebSocket
 
 wss.on('connection', ws => {
   console.log('Cliente conectado ao WebSocket (server/utils/websocket-server.js)');
