@@ -95,8 +95,12 @@
       <div class="text-gray-400 mb-2 bg-gray-800 p-2 rounded">
         <div class="mb-2">
           Assunto: {{ selectedEmail.subject }}
-        </div> <div class="mb-2">
+        </div> 
+        <div class="mb-2">
           De: <span class="text-white">{{ selectedEmail.senderName }}</span>
+        </div>
+        <div class="mb-2">
+          Para: <span class="text-white">{{ selectedEmail.receiverName }}</span>
         </div>
         <div>
           Data: <i>{{ formatDateLong(selectedEmail.date) }}</i>
@@ -143,69 +147,65 @@
         Select an email to view its content.
       </aside> -->
 
-    <Dialog
-      @show="handleShow"
-      v-model:visible="isComposing"
-      header="Nova mensagem"
-      :style="{ width: '50vw' }"
-      :breakpoints="{ '960px': '85vw', '640px': '95vw' }"
-    >
-      <InputText
-        id="from"
-        type="hidden"
-        v-model="currentUser.id"
-        class="w-full bg-gray-700 text-white border-gray-600"
+      <Dialog
+    v-model:visible="isComposing"
+    modal
+    :draggable="false"
+    :closable="false"
+    :breakpoints="{
+    '1600px': '50vw',   /* Para telas muito grandes (ex: > 1600px), 50% da largura */
+    '1200px': '60vw',   /* Para telas grandes (> 13 polegadas), 60% da largura */
+    '960px': '80vw',    /* Para tablets e telas menores */
+    '640px': '95vw',    /* Para celulares em modo paisagem */
+    '0px': '100vw'      /* Para celulares em modo retrato */
+  }"
+  :style="{ maxHeight: '90vh' }"
+    class="gmail-compose-dialog  no-padding"
+  >
+  <template #header>
+  <div class="gmail-header">
+    <div class="header-title">Nova mensagem</div>
+    <div class="header-icons">
+      <Button
+        icon="pi pi-send"
+        class="p-button-primary p-button-rounded p-button-sm send-icon-button"
+        @click="handleSendNewEmail"
+        aria-label="Enviar"
       />
+      <Button
+        icon="pi pi-times"
+        class="p-button-text p-button-sm close-button"
+        @click="isComposing = false"
+        aria-label="Fechar"
+      />
+    </div>
+  </div>
+</template>
 
-      <div class="flex mb-4 gap-4">
-        <div class="flex-grow">
-          <label for="to" class="block text-gray-300 mb-1">Para:</label>
-          <Dropdown
-            id="to"
-            v-model="selectedRecipient"
-            :options="usersList"
-            optionLabel="nome"
-            optionValue="id"
-            placeholder="Selecione um destinatário"
-            class="w-full bg-gray-700 text-white border-gray-600"
-          />
-        </div>
-        <div class="flex-grow">
-          <label for="subject" class="block text-gray-300 mb-1">Assunto:</label>
-          <InputText
-            id="subject"
-            type="text"
-            v-model="composeEmail.subject"
-            class="w-full bg-gray-700 text-white border-gray-600"
-          />
-        </div>
-      </div>
-
-      <div class="mb-4">
-        <label for="body" class="block text-gray-300 mb-1">Mensagem:</label>
-        <Textarea
-          autofocus
-          id="body"
-          rows="10"
-          v-model="composeEmail.body"
-          class="w-full bg-gray-700 text-white border-gray-600"
-          ref="bodyTextarea"
-        />
-      </div>
-
-      <template #footer>
-        <Button
-          label="Cancelar"
-          class="p-button-secondary"
-          @click="isComposing = false"
-        />
-        <Button
-          label="Enviar"
-          class="p-button-primary"
-          @click="handleSendNewEmail"
-        />
-      </template>
-    </Dialog>
+    <div class="gmail-compose-content">
+      <Dropdown
+        v-model="selectedRecipient"
+        :options="usersList"
+        optionLabel="nome"
+        optionValue="id"
+        placeholder="Para"
+        class="gmail-input"
+      />
+      <InputText
+        type="text"
+        v-model="composeEmail.subject"
+        placeholder="Assunto"
+        class="gmail-input"
+      />
+      <Textarea
+        autofocus
+        rows="20"
+        v-model="composeEmail.body"
+        placeholder="Escreva sua mensagem..."
+        class="gmail-textarea"
+      />
+    </div>
+  </Dialog>
   </div>
 </template>
 
@@ -607,4 +607,123 @@ onMounted(() => {
 .prose {
   max-width: none; /* Override default prose max-width */
 }
+
+/* Remove todos os paddings do Dialog */
+.no-padding .p-dialog-content,
+.no-padding .p-dialog-header,
+.no-padding .p-dialog-footer {
+  padding: 0 !important;
+}
+
+/* Zera margin/padding entre inputs */
+.gmail-compose-content {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ajustes tight para inputs */
+.gmail-input {
+  border: none;
+  border-bottom: 1px solid #ddd;
+  border-radius: 0;
+  padding: 0.5rem;
+  margin: 0;
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+.gmail-input:focus {
+  box-shadow: none;
+  border-color: #42a5f5;
+}
+
+.gmail-textarea {
+  border: none;
+  resize: none;
+  width: 100%;
+  font-size: 0.95rem;
+  min-height: 180px;
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.gmail-textarea:focus {
+  box-shadow: none;
+  border-bottom: 1px solid #42a5f5;
+}
+
+.p-dialog-header-content {
+  font-weight: 500;
+  font-size: 1rem;
+  padding-left: 0.5rem;
+}
+
+.p-dialog-header-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.gmail-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* Alinha os itens nas extremidades */
+  align-items: center; /* Alinha verticalmente */
+  padding: 0.4rem 0.5rem; /* Espaçamento interno */
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center; /* Alinha os ícones verticalmente */
+}
+
+.send-icon-button {
+  margin-right: 0.5rem; /* Espaço entre os botões */
+}
+
+.close-button {
+  /* Adicione estilos específicos para o botão de fechar, se necessário */
+}
+
+/* Estilo padrão para telas maiores (> 1200px) */
+@media screen and (min-width: 1201px) {
+  .gmail-compose-dialog {
+    width: 60vw !important; /* Largura menor para telas grandes */
+  }
+}
+
+/* Para telas ainda maiores (> 1600px) */
+@media screen and (min-width: 1601px) {
+  .gmail-compose-dialog {
+    width: 50vw !important; /* Largura ainda menor para telas muito grandes */
+  }
+}
+
+/* Breakpoints para telas menores (como você já tinha) */
+@media screen and (max-width: 1200px) and (min-width: 961px) {
+  .gmail-compose-dialog {
+    width: 80vw !important;
+  }
+}
+
+@media screen and (max-width: 960px) and (min-width: 641px) {
+  .gmail-compose-dialog {
+    width: 90vw !important;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .gmail-compose-dialog {
+    width: 95vw !important;
+  }
+}
+
 </style>
