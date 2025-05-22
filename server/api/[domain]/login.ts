@@ -56,14 +56,14 @@ export default defineEventHandler(async (event : H3Event) => {
 		domain: domain,
 		username: findUser.usuario.nome,
 		roles: findUser.usuario.roles_ids
-	}, SECRET_KEY, {expiresIn: "1h"});
+	}, SECRET_KEY, {expiresIn: "10000h"});
 
 	setCookie(event, "auth_token", token, {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
 		sameSite: "strict",
 		path: "/",
-		maxAge: 3600
+		maxAge: 60 * 60 * 24 * 700000
 	});
 
 	const userDataToStore = {... findUser.usuario};

@@ -73,6 +73,22 @@ const model = ref([
           }
           // { label: 'Lista', icon: 'pi pi-fw pi-id-card', to: '/'+domain + '/lista' }
         ]
+      } ,
+      {
+        label: "Financeiro",
+        icon: "pi pi-fw pi-id-card",
+        items: [
+           {
+            label: "Categorias",
+            icon: "pi pi-fw pi-id-card",
+            to: `/${domain}/${user}/financial_category`
+          },
+          {
+            label: "Lançamentos",
+            icon: "pi pi-fw pi-id-card",
+            to: `/${domain}/${user}/financial_lancamentos`
+          }
+        ]
       }
     ]
   }

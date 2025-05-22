@@ -1,40 +1,58 @@
 // middleware/auth-check.global.js
 // import jwt from 'jsonwebtoken';
+const {getUser} = useUser();
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
+
+	const { domain, user: userFromUrl, page } = useNuxtApp().$urlContext
+	console.log("domain----------------:", domain);
+	console.log("userFromUrl----------------:", userFromUrl);
+
 	console.log("Auth check middleware triggered");
 	console.log("To route:", to);
 	console.log("From route:", from);
 
-	const {data: ret} = await useFetch("/api/user");
-	console.log("User data:", ret.value);
-	if (ret.value.statusCode == "401") {
-		console.log("User not authenticated, redirecting to login page");
-		const domain = to.path.split("/")[1];
-		console.log("Domain from URL:", domain);
-		
-	} else {
+	console.log("page:", page);
+
+	if (domain) {
+	// if (!domain && to.path !== "/") {
+	// 	console.log("Domain or user not found in URL context");
+	// 	return navigateTo("/", {external: true});
+	// }
+
+	
+	console.log("Domain and user found in URL context");
+
+	// Buscar usuário atual
+	const {data: user, error} = await getUser();
+	console.log("User data:", user.value);
+
+	console.log("user.value.user?.username:", user.value.user?.username);
+	if (user.value.user?.username) {
 		const domainFromUrl = to.path.split("/")[1];
-		const domainFromToken = ret.value.user.domain;
+		const domainFromToken = user.value.user?.domain;
 
 		const usernameFromUrl = to.path.split("/")[2];
-		const usernameFromToken = ret.value.user.username;
+		const usernameFromToken = user.value.user?.username;
 
-		console.log("ret::::::", domainFromUrl === domainFromToken);
-		// Check if the domain from the URL matches the domain from the token
 
+		console.log("domainFromUrl:", domainFromUrl);
+		console.log("domainFromToken:", domainFromToken);
+		console.log("usernameFromUrl:", usernameFromUrl);
+		console.log("usernameFromToken:", usernameFromToken);
+		
+		// verifica se o domínio e o usuário do token são iguais aos da URL
 		if (usernameFromUrl !== 'auth') {
 			if (domainFromUrl !== domainFromToken || usernameFromUrl !== usernameFromToken) {
 				console.log("Domain mismatch, redirecting to login page");
-				return navigateTo(`/${domainFromUrl}/auth/login`);
+				return navigateTo(`/${domainFromUrl}/auth/login`, {external: true});
 			}
 		}
 	}
 
-
 	const allowedPaths = [
 		"/dashboard",
-		"/auth/login",
+		"login",
 		"/forbidden",
 		"/password",
 		"/profile",
@@ -54,31 +72,21 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		return;
 	}
 
-	//    console.log('acesso a página comum:', to);
-
-	let a = to.path.split("/");
-	if (a.length > 0) {
-		console.log("domínio:", a[1]);
-		let domain = a[1];
-    let user = a[2];
-		let page = a[3] || "";
-		if (page) {
-      // if (page.includes("@")) {
-      //   page = page.split("?")[0];
-      // }
-
-			const response = await $fetch(`/api/${domain}/${user}/${page}`);
-			console.log("response:", response);
-			if (response.statusCode === 404) {
-				console.log("acesso negado");
-				return navigateTo(`/${domain}/${user}/forbidden`);
-			}
-			if (response.statusCode === 222) {
-				console.log("acesso negado");
-				return navigateTo(`/${domain}/auth/login`);
-			}
-		} else {
-			console.log("dashboard");
+	if (page) {
+		console.log("`/api/${domain}/${userFromUrl}/${page}`:", `/api/${domain}/${userFromUrl}/${page}`);
+		
+		const response = await $fetch(`/api/${domain}/${userFromUrl}/${page}`);
+		console.log("response:", response);
+		if (response.statusCode === 404) {
+			console.log("acesso negado");
+			return navigateTo(`/${domain}/${userFromUrl}/forbidden`);
 		}
+		if (response.statusCode === 222) {
+			console.log("acesso negado");
+			return navigateTo(`/${domain}/auth/login`);
+		}
+	} else {
+		console.log("dashboard");
 	}
+}
 });

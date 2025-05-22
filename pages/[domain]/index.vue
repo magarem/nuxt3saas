@@ -1,4 +1,5 @@
 <template>
+
 </template>
 <script lang="ts" setup>
 definePageMeta({
@@ -32,17 +33,18 @@ const checkDomain_ = async () => {
     router.push(`/${domain}/domain-not-exists`); // Redirect on error as well
   }
 };
-const response = await $fetch(`/api/user`);
 
-
-console.log('response>>>>:', response);
-
-if (response.statusCode == 401) {
-  // Redireciona para a página de login
-  router.push((currentPath +'/auth/login').replaceAll('//', '/'));
-} else {
-  // Redireciona para a página de dashboard
-  router.push((`${currentPath}/${response.user.username}/dashboard`).replaceAll('//', '/'));
+async function go(){
+  const response = await $fetch(`/api/user`);
+  console.log('response>>>>:', response);
+  if (response.statusCode == 401) {
+    // Redireciona para a página de login
+    router.push((currentPath +'/auth/login').replaceAll('//', '/'));
+  } else {
+    // Redireciona para a página de dashboard
+    router.push((`${currentPath}/${response.user.username}/dashboard`).replaceAll('//', '/'));
+  }
 }
 
+go()
 </script>
