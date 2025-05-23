@@ -43,6 +43,11 @@ const model = ref([
         to: `/${domain}/${user}/dashboard`
       },
       {
+        label: "Contatos",
+        icon: "pi pi-fw pi-id-card",
+        to: `/${domain}/${user}/contacts`
+      },
+      {
         label: "Teste",
         icon: "pi pi-fw pi-id-card",
         to: `/${domain}/${user}/teste`
@@ -86,7 +91,18 @@ const model = ref([
           {
             label: "Lançamentos",
             icon: "pi pi-fw pi-id-card",
-            to: `/${domain}/${user}/financial_lancamentos`
+             items: [
+                {
+                  label: "Entrada",
+                  icon: "pi pi-fw pi-id-card",
+                  to: `/${domain}/${user}/financial_lancamentos?op=entrada`
+                },
+                {
+                  label: "Saída",
+                  icon: "pi pi-fw pi-id-card",
+                  to: `/${domain}/${user}/financial_lancamentos?op=saída`
+                }
+              ]
           }
         ]
       }
@@ -97,8 +113,6 @@ const model = ref([
 watch(() => router.currentRoute.value.path, (newPath) => {
   currentPath.value = newPath;
 });
-
-
 </script>
 
 <template>

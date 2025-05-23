@@ -42,7 +42,7 @@
       >
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
-            <h4 class="m-0">Usuários</h4>
+            <h4 class="m-0">Lançamentos</h4>
             <IconField>
               <InputIcon>
                 <i class="pi pi-search" />
@@ -69,17 +69,17 @@
           :sortable="col.sortable"
           :style="col.style"
         >
-
-        
           <template #body="slotProps">
-             <span v-if="col.editTemplate === 'calendar'">
-        {{ formatDateBR(slotProps.data[col.field]) }}
-      </span>
-       <span v-else>
- <!-- {{ formatValue(slotProps.data[col.field]) }} -->
-            {{ slotProps.data[col.field] }}
-       </span>
-           
+            <span v-if="col.editTemplate === 'money'">
+              {{ formatCurrency(slotProps.data[col.field]) }}
+            </span>
+            <span v-else-if="col.editTemplate === 'calendar'">
+              {{ formatDateBR(slotProps.data[col.field]) }}
+            </span>
+            <span v-else>
+              <!-- {{ formatValue(slotProps.data[col.field]) }} -->
+              {{ slotProps.data[col.field] }}
+            </span>
           </template>
 
           <!-- <template v-if="col.bodyTemplate" #body="slotProps">
@@ -121,42 +121,59 @@
     >
       <div class="flex flex-col gap-6">
         <template v-for="col in columns" :key="col.field">
-          <div v-if="col.editTemplate">
-            <label :for="col.field" class="block font-bold mb-3">{{
-              col.header
-            }}</label>
-           
-<div  v-if="col.editTemplate == 'money'">
-<money3 v-model="item[col.field]" v-bind="config"  class="p-inputtext p-component" ></money3> 
-  <!-- <InputText v-model="item.valor" v-money="money" /> -->
-</div>
-<div  v-if="col.editTemplate == 'calendar'">
- <Calendar
+          
+         <div v-if="col.editTemplate && !col.hide_editForm" class="mb-0">
+  <label :for="col.field" class="block font-bold mb-2">
+    {{ col.header }}
+  </label>
+
+  <!-- Campo de dinheiro -->
+  <money3
+    v-if="col.editTemplate === 'money'"
+    v-model="item[col.field]"
+    v-bind="config"
+    class="p-inputtext p-component"
+  />
+
+  <!-- Campo de seleção -->
+  <Select
+    v-else-if="col.editTemplate === 'Select'"
+    v-model="item[col.field]"
+    :options="col.options"
+    optionLabel="value"
+    placeholder="Selecione"
+    checkmark
+    :highlightOnSelect="false"
+    class="w-full md:w-56"
+  />
+
+  <!-- Campo de data -->
+  <Calendar
+    v-else-if="col.editTemplate === 'calendar'"
     v-model="item[col.field]"
     dateFormat="dd/mm/yy"
     :locale="brLocale"
     showIcon
     class="w-full"
   />
-</div>
-          <div v-else>
 
-            
-            <component
-             
-              :is="col.editTemplate"
-              v-model="item[col.field]"
-              :item="item"
-              :options="col.options"
-              :submitted="submitted"
-              :field="col.field"
-            />
-          </div>
-            
-            <small v-if="submitted && !item[col.field]" class="text-red-500"
-              >{{ col.header }} is required.</small
-            >
-          </div>
+  <!-- Componente genérico personalizado -->
+  <component
+    v-else
+    :is="col.editTemplate"
+    v-model="item[col.field]"
+    :item="item"
+    :options="col.options"
+    :submitted="submitted"
+    :field="col.field"
+  />
+
+  <!-- Validação -->
+  <small v-if="submitted && !item[col.field]" class="text-red-500">
+    {{ col.header }} é obrigatório.
+  </small>
+</div>
+
         </template>
       </div>
 
@@ -218,224 +235,397 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
-import { FilterMatchMode } from '@primevue/core/api'
-import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import { useToast } from "primevue/usetoast";
+import { FilterMatchMode } from "@primevue/core/api";
+import InputText from "primevue/inputtext";
+import InputNumber from "primevue/inputnumber";
+import Calendar from "primevue/calendar";
+import Dropdown from "primevue/dropdown";
+import Select from "primevue/select";
 import CustomSelect from "~/components/CustomSelect.vue";
-const toast = useToast()
-const route = useRoute()
-const domain = route.params.domain
+import { ca } from "date-fns/locale";
+const toast = useToast();
+const route = useRoute();
+const domain = route.params.domain;
 
-const dt = ref()
-const items = ref([])
-const item = ref({})
-const itemDialog = ref(false)
-const deleteItemDialog = ref(false)
-const deleteItemsDialog = ref(false)
-const selectedItems = ref([])
-const submitted = ref(false)
+const dt = ref();
+const items = ref([]);
+const item = ref({});
+const itemDialog = ref(false);
+const deleteItemDialog = ref(false);
+const deleteItemsDialog = ref(false);
+const selectedItems = ref([]);
+const submitted = ref(false);
 
-const amount = ref(null)
+const amount = ref(null);
+const op = route.query.op;
+
+const { getUser } = useUser();
+const { data: ret, error } = await getUser();
+console.log("user>22>>>:", ret.value.user.id);
+
+function go(x) {
+  alert(x);
+}
 
 function formatDateBR(date) {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('pt-BR')
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("pt-BR");
 }
 
 const config = {
-   prefix: '',
-          suffix: '',
-          thousands: '.',
-          decimal: ',',
-          precision: 2,
-          disableNegative: false,
-          disabled: false,
-          min: null,
-          max: null,
-          allowBlank: false,
-          minimumNumberOfCharacters: 0,
-          shouldRound: true,
-          focusOnRight: false,
-}
+  prefix: "",
+  suffix: "",
+  thousands: ".",
+  decimal: ",",
+  precision: 2,
+  disableNegative: false,
+  disabled: false,
+  min: null,
+  max: null,
+  allowBlank: false,
+  minimumNumberOfCharacters: 0,
+  shouldRound: true,
+  focusOnRight: false
+};
 
 // Localização em português do Brasil
 const brLocale = {
   firstDayOfWeek: 0,
-  dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
-  dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
-  dayNamesMin: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
+  dayNames: [
+    "Domingo",
+    "Segunda",
+    "Terça",
+    "Quarta",
+    "Quinta",
+    "Sexta",
+    "Sábado"
+  ],
+  dayNamesShort: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+  dayNamesMin: ["D", "S", "T", "Q", "Q", "S", "S"],
   monthNames: [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro"
   ],
   monthNamesShort: [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez"
   ],
-  today: 'Hoje',
-  clear: 'Limpar'
-}
+  today: "Hoje",
+  clear: "Limpar"
+};
 
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-})
+});
 
-const categoryOptions = ref([])
+const categoryOptions = ref([]);
+const contactsOptions = ref([]);
 
 const columns = ref([
   {
-    field: 'date',
-    header: 'Data',
+    field: "date",
+    header: "Data",
     sortable: true,
-    style: { 'min-width': '10rem' },
-    editTemplate: 'calendar'
-  },{
-    field: 'type',
-    header: 'Tipo',
-    sortable: true,
-    style: { 'min-width': '10rem' },
-    editTemplate: CustomSelect,
-    options: [
-      { key: 'Entrada', value: 'entrada' },
-      { key: 'Saída', value: 'saída' }
-    ]
+    style: { "min-width": "5rem" },
+    editTemplate: "calendar"
   },
   {
-    field: 'category_id',
-    header: 'Categoria',
+    field: "type",
+    header: "Tipo",
     sortable: true,
-    style: { 'min-width': '10rem' },
-    editTemplate: CustomSelect,
-    options: categoryOptions
-  },
-  {
-    field: 'description',
-    header: 'Descrição',
-    sortable: true,
-    style: { 'min-width': '10rem' },
+    style: { "min-width": "5rem" },
     editTemplate: InputText
   },
   {
-    field: 'amount',
-    header: 'Valor',
+    field: "doc",
+    header: "Documento",
     sortable: true,
-    style: { 'min-width': '15rem' },
-    editTemplate: 'money'
+    style: { "min-width": "7rem" },
+    editTemplate: InputText
+  },
+  {
+    field: "category_id",
+    header: "Categoria",
+    sortable: true,
+    style: { "min-width": "10rem" },
+    editTemplate: 'Select',
+    options: categoryOptions,
+    hidden: true
+  },
+  {
+    field: "category",
+    header: "Categoria",
+    sortable: true,
+    style: { "min-width": "10rem" },
+    editTemplate: CustomSelect,
+    options: categoryOptions,
+    hide_editForm: true
+  },
+  {
+    field: "description",
+    header: "Descrição",
+    sortable: true,
+    style: { "min-width": "10rem" },
+    editTemplate: InputText
+  },
+  {
+    field: "amount",
+    header: "Valor",
+    sortable: true,
+    style: { "min-width": "5rem" },
+    editTemplate: "money"
+  },
+  {
+    field: "related_id",
+    header: "Contato",
+    sortable: true,
+    style: { "min-width": "15rem" },
+    editTemplate: 'Select',
+    options: contactsOptions,
+    hidden: true
+  },
+  {
+    field: "contact_name",
+    header: "Contato",
+    sortable: true,
+    style: { "min-width": "10rem" },
+    editTemplate: InputText,
+    hide_editForm: true
   }
-])
+]);
+
+item.value.tipo = "entrada";
 
 const visibleColumns = computed(() => {
-  return columns.value.filter(col => !col.hidden)
-})
+  return columns.value.filter(col => !col.hidden);
+});
+
+const fetchDados = async newVal => {
+  //fc.name AS category,
+  const data = await executeQuery(
+    domain,
+    `SELECT
+        ft.id,
+        ft.amount,
+        ft.doc,
+        ft.description,
+        ft.type,
+        ft.date,
+        fc.name AS category,
+        fc.id AS category_id,
+        
+        u.nome AS user,
+        c.id AS related_id,
+        c.name AS contact_name
+      FROM financial_transactions ft
+
+      LEFT JOIN financial_categories fc ON ft.category_id = fc.id
+      LEFT JOIN users u ON ft.created_by = u.id
+      LEFT JOIN contacts c ON ft.related_id = c.id
+      WHERE ft.type like '${newVal}'
+      ORDER BY ft.date DESC;`
+  );
+  // const data = await executeQuery(domain, `SELECT * FROM financial_transactions where type like '${newVal}'`)
+
+  console.log("444444$$", data);
+  const cats = await executeQuery(
+    domain,
+    `SELECT id, name FROM financial_categories where type like '${newVal}'`
+  );
+  const contacts = await executeQuery(domain, `SELECT * FROM contacts`);
+  categoryOptions.value = cats.map(cat => ({ value: cat.name, key: cat.id }));
+  contactsOptions.value = contacts.map(cat => ({
+    value: cat.name,
+    key: cat.id
+  }));
+  items.value = data;
+};
 
 onMounted(async () => {
-  const data = await executeQuery(domain, `SELECT * FROM financial_transactions`)
-  const cats = await executeQuery(domain, `SELECT id, name FROM financial_categories`)
-  categoryOptions.value = cats.map(cat => ({ value: cat.name, key: cat.id }))
-  items.value = data
-})
+  fetchDados(op);
+});
 
 async function executeQuery(domain, sql) {
   const res = await fetch(`/api/${domain}/query`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ sql })
-  })
-  return await res.json()
+  });
+  return await res.json();
 }
 
 function formatDate(date) {
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
-  return new Date(date).toLocaleDateString('pt-BR', options)
+  const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+  return new Date(date).toLocaleDateString("pt-BR", options);
 }
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
     minimumFractionDigits: 2
-  }).format(value)
+  }).format(value);
 }
 
 function openNew() {
-  item.value = {}
-  submitted.value = false
-  itemDialog.value = true
+  item.value = {};
+  item.value.type = route.query.op;
+  item.value.date = new Date();
+  submitted.value = false;
+  itemDialog.value = true;
 }
 
 function hideDialog() {
-  itemDialog.value = false
-  submitted.value = false
+  itemDialog.value = false;
+  submitted.value = false;
 }
 
 async function saveItem() {
-  submitted.value = true
+  submitted.value = true;
 
-  let isValid = true
-  for (const col of columns.value) {
-    if (col.editTemplate && !item.value[col.field]) {
-      isValid = false
-      break
-    }
-  }
+  let isValid = true;
+  // for (const col of columns.value) {
+  //   if (col.editTemplate && !item.value[col.field]) {
+  //     isValid = false;
+  //     break;
+  //   }
+  // }
 
-  if (!isValid) return
+  // if (!isValid) return;
 
-  const dataToSave = { ...item.value }
-  const isNew = !dataToSave.id
+  const dataToSave = {
+    ...item.value,
+    created_by: ret.value.user.id,
+    category_id: item.value.category_id?.key||0,
+    related_id: item.value.related_id?.key||0,
+  };
+
+  delete dataToSave.category;
+  delete dataToSave.contact;
+  delete dataToSave.user;
+  delete dataToSave.contact_name;
+
+  console.log("item.value>>>", item.value);
+  console.log("dataToSave>>>", dataToSave);
+
+  const isNew = !dataToSave.id;
 
   const result = await $fetch(`/api/${domain}/upsert`, {
-    method: 'POST',
+    method: "POST",
     body: {
-      table: 'financial_transactions',
+      table: "financial_transactions",
       data: dataToSave,
       condition: !isNew ? `id = ${dataToSave.id}` : null
     }
-  })
+  });
 
   if (result?.error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar', life: 3000 })
+    toast.add({
+      severity: "error",
+      summary: "Erro",
+      detail: "Falha ao salvar",
+      life: 3000
+    });
   } else {
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: isNew ? 'Criado' : 'Atualizado', life: 3000 })
-    items.value = await executeQuery(domain, `SELECT * FROM financial_transactions`)
-    itemDialog.value = false
+    toast.add({
+      severity: "success",
+      summary: "Sucesso",
+      detail: isNew ? "Criado" : "Atualizado",
+      life: 3000
+    });
+    fetchDados(op);
+    itemDialog.value = false;
   }
 }
 
 function editItem(row) {
-  item.value = { ...row }
-  itemDialog.value = true
+  item.value = { ...row };
+  itemDialog.value = true;
 }
 
 function confirmDeleteItem(row) {
-  item.value = { ...row }
-  deleteItemDialog.value = true
+  item.value = { ...row };
+  deleteItemDialog.value = true;
+}
+
+async function executeQueryRun(domain, sql) {
+  // Added domain
+  try {
+    const response = await fetch(`/api/${domain}/queryRun`, {
+      // Changed URL
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ sql })
+    });
+    // Handle errors like before
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    // Handle error
+  }
 }
 
 async function deleteItem() {
-  await executeQueryRun(domain, `DELETE FROM financial_transactions WHERE id = ${item.value.id}`)
-  items.value = await executeQuery(domain, `SELECT * FROM financial_transactions`)
-  deleteItemDialog.value = false
-  item.value = {}
-  toast.add({ severity: 'success', summary: 'Removido', life: 3000 })
+  await executeQueryRun(
+    domain,
+    `DELETE FROM financial_transactions WHERE id = ${item.value.id}`
+  );
+  fetchDados(op);
+  deleteItemDialog.value = false;
+  item.value = {};
+  toast.add({ severity: "success", summary: "Removido", life: 3000 });
 }
 
 function confirmDeleteSelected() {
-  deleteItemsDialog.value = true
+  deleteItemsDialog.value = true;
 }
 
 async function deleteSelectedItems() {
   for (const selected of selectedItems.value) {
-    await executeQueryRun(domain, `DELETE FROM financial_transactions WHERE id = ${selected.id}`)
+    await executeQueryRun(
+      domain,
+      `DELETE FROM financial_transactions WHERE id = ${selected.id}`
+    );
   }
-  selectedItems.value = []
-  deleteItemsDialog.value = false
-  items.value = await executeQuery(domain, `SELECT * FROM financial_transactions`)
-  toast.add({ severity: 'success', summary: 'Removidos', life: 3000 })
+  selectedItems.value = [];
+  deleteItemsDialog.value = false;
+  items.value = await executeQuery(
+    domain,
+    `SELECT * FROM financial_transactions`
+  );
+  toast.add({ severity: "success", summary: "Removidos", life: 3000 });
 }
+
+// Reage à mudança na query string
+watch(
+  () => route.query.op,
+  newVal => {
+    fetchDados(newVal);
+  }
+);
 </script>

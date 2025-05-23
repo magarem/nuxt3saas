@@ -42,7 +42,7 @@
       >
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
-            <h4 class="m-0">Financeiro - Categorias</h4>
+            <h4 class="m-0">Usuários</h4>
             <IconField>
               <InputIcon>
                 <i class="pi pi-search" />
@@ -125,7 +125,7 @@
               :submitted="submitted"
               :field="col.field"
             />
-            <small v-if="submitted && !item[col.field]" class="text-red-500"
+            <small v-if="submitted" class="text-red-500"
               >{{ col.header }} is required.</small
             >
           </div>
@@ -202,6 +202,7 @@ import RadioButton from "primevue/radiobutton";
 import Rating from "primevue/rating";
 import Tag from "primevue/tag";
 import CustomSelect from "~/components/CustomSelect.vue";
+import RadioButtonGroup from 'primevue/radiobuttongroup';
 import CustomCheckbox from "~/components/CustomCheckbox.vue";
 
 const toast = useToast();
@@ -218,6 +219,11 @@ const filters = ref({
 const submitted = ref(false);
 const route = useRoute();
 const domain = route.params.domain;
+
+
+const {getUser} = useUser();
+const {data: ret, error} = await getUser();
+console.log('user>22>>>:', ret.value.user.id);
 
 const visibleColumns = computed(() => {
   return columns.value.filter(col => !col.hidden);
@@ -236,11 +242,47 @@ const columns = ref([
     header: "Tipo",
     sortable: true,
     style: { "min-width": "10rem" },
+    editTemplate: CustomSelect,
+    options: [{key:'Física', value:'Física'}, {key:'Jurídica    ', value:'Jurídica'}]
+  },
+  {
+    field: "doc",
+    header: "Documento",
+    sortable: true,
+    style: { "min-width": "20rem" },
     editTemplate: InputText
   },
   {
-    field: "description",
-    header: "Descrição",
+    field: "email",
+    header: "Email",
+    sortable: true,
+    style: { "min-width": "20rem" },
+    editTemplate: InputText
+  },
+  {
+    field: "fone1",
+    header: "Telefone 1",
+    sortable: true,
+    style: { "min-width": "20rem" },
+    editTemplate: InputText
+  },
+  {
+    field: "fone2",
+    header: "Telefone 2",
+    sortable: true,
+    style: { "min-width": "20rem" },
+    editTemplate: InputText
+  },
+  {
+    field: "address",
+    header: "Endereço",
+    sortable: true,
+    style: { "min-width": "20rem" },
+    editTemplate: InputText
+  },
+  {
+    field: "obs",
+    header: "Observações",
     sortable: true,
     style: { "min-width": "20rem" },
     editTemplate: InputText
@@ -301,7 +343,7 @@ async function executeQueryRun(domain, sql) {
 async function fetchData() {
   // const route = useRoute(
   const data = await executeQuery(domain, `
-  SELECT * from financial_categories
+  SELECT * from contacts
   `);
 
   console.log("Fetched data:", data);
@@ -324,23 +366,23 @@ async function saveItem() {
   submitted.value = true;
 
   let isValid = true;
-  for (const col of columns.value) {
-    if (col.editTemplate && !item.value[col.field] && col.field !== 'roles') {
-      isValid = false;
-      break;
-    }
-  }
+//   for (const col of columns.value) {
+//     if (col.editTemplate && !item.value[col.field] && col.field !== 'roles') {
+//       isValid = false;
+//       break;
+//     }
+//   }
 
   if (isValid) {
     try {
-      const userData = {...item.value}
+      const userData = {...item.value, user_id: ret.value.user.id}
        
 
       // 1. Salvar/atualizar os dados básicos do usuário na tabela 'users'
       const userResponse = await $fetch(`/api/${domain}/upsert`, {
         method: "POST",
         body: {
-          table: "financial_categories", // Substitua pelo nome da sua tabela
+          table: "contacts", // Substitua pelo nome da sua tabela
           data: userData,
           condition: item.value.id ? `id = ${item.value.id}` : null,
         },
@@ -423,7 +465,7 @@ async function deleteItem() {
     const response = await $fetch(`/api/${domain}/delete`, {
       method: "POST",
       body: {
-        table: "financial_categories", // Substitua pelo nome da sua tabela
+        table: "contacts", // Substitua pelo nome da sua tabela
         condition: `id = ${item.value.id}`
       }
     });
