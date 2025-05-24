@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="card">
+   
       <Toolbar class="mb-1">
         <template #start>
           <Button
@@ -28,18 +29,11 @@
           />
         </template>
       </Toolbar>
-      <DataTable
-        ref="dt"
-        v-model:selection="selectedItems"
-        :value="items"
-        dataKey="id"
-        :paginator="true"
-        :rows="10"
-        :filters="filters"
-        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-        :rowsPerPageOptions="[5, 10, 25]"
-        currentPageReportTemplate="{first} até {last} de {totalRecords} itenxs"
-      >
+      
+      <TreeTable :value="categoryTree" tableStyle="min-width: 50rem">
+   
+
+     
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
             <h4 class="m-0">Financeiro - Categorias</h4>
@@ -61,28 +55,9 @@
           :exportable="false"
         ></Column>
 
-        <Column
-          v-for="col in visibleColumns"
-          :key="col.field"
-          :field="col.field"
-          :header="col.header"
-          :sortable="col.sortable"
-          :style="col.style"
-        >
-          <template #body="slotProps">
-            <!-- {{ formatValue(slotProps.data[col.field]) }} -->
-            {{ slotProps.data[col.field] }}
-          </template>
-
-          <!-- <template v-if="col.bodyTemplate" #body="slotProps">
-            <component
-              :is="col.bodyTemplate"
-              :slotProps="slotProps"
-              :formatCurrency="formatCurrency"
-              :getStatusLabel="getStatusLabel"
-            />
-          </template> -->
-        </Column>
+         <Column field="name" header="Name" expander style="width: 34%"></Column>
+        <Column field="type" header="Tipo" style="width: 33%"></Column>
+        <Column field="description" header="description" style="width: 33%"></Column>
 
         <Column :exportable="false" style="min-width: 12rem">
           <template #body="slotProps">
@@ -91,18 +66,18 @@
               outlined
               rounded
               class="mr-2"
-              @click="editItem(slotProps.data)"
+              @click="editItem(slotProps.node)"
             />
             <Button
               icon="pi pi-trash"
               outlined
               rounded
               severity="danger"
-              @click="confirmDeleteItem(slotProps.data)"
+              @click="confirmDeleteItem(slotProps.node)"
             />
           </template>
         </Column>
-      </DataTable>
+      </TreeTable>
     </div>
 
     <Dialog
@@ -113,11 +88,44 @@
     >
       <div class="flex flex-col gap-6">
         <template v-for="col in columns" :key="col.field">
-          <div v-if="col.editTemplate">
-            <label :for="col.field" class="block font-bold mb-3">{{
-              col.header
-            }}</label>
+          <div v-if="col.editTemplate && !col.hide_editForm" class="mb-0">
+            <label :for="col.field" class="block font-bold mb-2">
+              {{ col.header }}
+            </label>
+            <!-- Campo de dinheiro -->
+
+            <money3
+              v-if="col.editTemplate === 'money'"
+              v-model="item[col.field]"
+              v-bind="config"
+              class="p-inputtext p-component"
+            />
+
+            <!-- Campo de seleção -->
+            <Select
+              v-else-if="col.editTemplate === 'Select'"
+              v-model="item[col.field]"
+              :options="col.options"
+              optionLabel="value"
+              optionValue="key"
+              placeholder="Selecione"
+              :highlightOnSelect="false"
+              class="w-full md:w-56"
+            />
+
+            <!-- Campo de data -->
+            <Calendar
+              v-else-if="col.editTemplate === 'calendar'"
+              v-model="item[col.field]"
+              dateFormat="dd/mm/yy"
+              :locale="brLocale"
+              showIcon
+              class="w-full"
+            />
+
+            <!-- Componente genérico personalizado -->
             <component
+              v-else
               :is="col.editTemplate"
               v-model="item[col.field]"
               :item="item"
@@ -125,9 +133,11 @@
               :submitted="submitted"
               :field="col.field"
             />
-            <small v-if="submitted && !item[col.field]" class="text-red-500"
-              >{{ col.header }} is required.</small
-            >
+
+            <!-- Validação -->
+            <small v-if="submitted && !item[col.field]" class="text-red-500">
+              {{ col.header }} é obrigatório.
+            </small>
           </div>
         </template>
       </div>
@@ -211,7 +221,10 @@ const itemDialog = ref(false);
 const deleteItemDialog = ref(false);
 const deleteItemsDialog = ref(false);
 const item = ref({});
+const lista = ref({});
+const categoryTree = ref([])
 const selectedItems = ref([]);
+const select_options = ref([]);
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -224,6 +237,17 @@ const visibleColumns = computed(() => {
 });
 
 const columns = ref([
+  
+  {
+    field: "parent_id",
+    header: "Vinculo",
+    sortable: true,
+    style: { "min-width": "16rem" },
+    editTemplate: "Select",
+    options: select_options,
+    optionLabel: "value",
+    optionValue: "key"
+  },
   {
     field: "name",
     header: "Nome",
@@ -236,7 +260,13 @@ const columns = ref([
     header: "Tipo",
     sortable: true,
     style: { "min-width": "10rem" },
-    editTemplate: InputText
+    editTemplate: "Select",
+    options: [
+      { key: "entrada", value: "entrada" },
+      { key: "saída", value: "saída" }
+    ],
+    optionLabel: "value",
+    optionValue: "key"
   },
   {
     field: "description",
@@ -247,17 +277,21 @@ const columns = ref([
   }
 ]);
 
-onMounted(async () => {
+const loadData = async () => {
   const data = await fetchData();
   items.value = data;
+  select_options.value = [{key: null, value: '---'}, ...buildTreeOptions(data)]
+};
+
+onMounted(async () => {
+ loadData()
 });
 
-
 function formatValue(value) {
-  if (typeof value == 'object') {
-    return value.join(', '); // Format as JSON string
+  if (typeof value == "object") {
+    return value.join(", "); // Format as JSON string
   }
-  return value 
+  return value;
 }
 
 async function executeQuery(domain, sql) {
@@ -298,14 +332,96 @@ async function executeQueryRun(domain, sql) {
   }
 }
 
+function buildTreeOptions(data) {
+  const map = new Map();
+  const tree = [];
+
+  // 1. Indexar por id
+  data.forEach(item => map.set(item.id, { ...item, children: [] }));
+
+  // 2. Montar estrutura em árvore
+  data.forEach(item => {
+    if (item.parent_id) {
+      const parent = map.get(item.parent_id);
+      if (parent) parent.children.push(map.get(item.id));
+    } else {
+      tree.push(map.get(item.id));
+    }
+  });
+
+  // 3. Gerar lista com caminho formatado
+  const result = [];
+
+  function walk(node, path) {
+    const fullPath = path ? `${path} › ${node.name}` : node.name;
+    result.push({ key: node.id, value: fullPath });
+    node.children.forEach(child => walk(child, fullPath));
+  }
+
+  tree.forEach(root => walk(root, ''));
+  return result;
+}
+
+function buildCategoryTree(flatCategories) {
+  // 1. Criar um mapa de ID para nó e uma lista de nós raiz
+  const map = {};
+  const tree = [];
+
+  // 2. Primeiro passada: criar todos os nós no mapa
+  flatCategories.forEach(item => {
+    map[item.id] = {
+      key: item.id,
+      parent_id: item.parent_id,
+      data: {
+        name: item.name,
+        type: item.type,
+        description: item.description
+      },
+      children: []
+    };
+  });
+
+  // 3. Segunda passada: conectar filhos aos pais
+  flatCategories.forEach(item => {
+    const node = map[item.id];
+
+    if (item.parent_id) {
+      // Se tem pai, adiciona como filho do pai
+      if (map[item.parent_id]) {
+        map[item.parent_id].children.push(node);
+      }
+    } else {
+      // Sem pai, é um nó raiz
+      tree.push(node);
+    }
+  });
+
+  return tree;
+}
+
 async function fetchData() {
   // const route = useRoute(
-  const data = await executeQuery(domain, `
-  SELECT * from financial_categories
-  `);
+  const data = await executeQuery(
+    domain,
+    `
+  SELECT 
+  t1.id,
+  t1.parent_id as parent_id,
+  t2.name AS parent_name,
+  t1.name,
+  t1.type,
+  t1.description
+FROM financial_categories t1
+LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id;
+  `
+  );
 
   console.log("Fetched data:", data);
 
+  // Exemplo de uso:
+ 
+ categoryTree.value = buildCategoryTree(data);
+console.log(JSON.stringify(categoryTree.value, null, 2));
   return data;
 }
 
@@ -324,17 +440,16 @@ async function saveItem() {
   submitted.value = true;
 
   let isValid = true;
-  for (const col of columns.value) {
-    if (col.editTemplate && !item.value[col.field] && col.field !== 'roles') {
-      isValid = false;
-      break;
-    }
-  }
+  // for (const col of columns.value) {
+  //   if (col.editTemplate && !item.value[col.field] && col.field !== 'roles') {
+  //     isValid = false;
+  //     break;
+  //   }
+  // }
 
   if (isValid) {
     try {
-      const userData = {...item.value}
-       
+      const userData = { ...item.value };
 
       // 1. Salvar/atualizar os dados básicos do usuário na tabela 'users'
       const userResponse = await $fetch(`/api/${domain}/upsert`, {
@@ -342,8 +457,8 @@ async function saveItem() {
         body: {
           table: "financial_categories", // Substitua pelo nome da sua tabela
           data: userData,
-          condition: item.value.id ? `id = ${item.value.id}` : null,
-        },
+          condition: item.value.id ? `id = ${item.value.id}` : null
+        }
       });
 
       let userId;
@@ -354,7 +469,7 @@ async function saveItem() {
             severity: "error",
             summary: "Error",
             detail: "Failed to update user data",
-            life: 3000,
+            life: 3000
           });
           return;
         }
@@ -367,7 +482,7 @@ async function saveItem() {
             severity: "error",
             summary: "Error",
             detail: "Failed to create new user",
-            life: 3000,
+            life: 3000
           });
           return;
         }
@@ -377,7 +492,7 @@ async function saveItem() {
         severity: "success",
         summary: "Successful",
         detail: "Item Saved",
-        life: 3000,
+        life: 3000
       });
 
       itemDialog.value = false;
@@ -386,35 +501,47 @@ async function saveItem() {
       // 3. Atualizar a lista localmente
       if (item.value.id) {
         // Atualizar registro existente
-        const index = items.value.findIndex((val) => val.id === item.value.id);
+        const index = items.value.findIndex(val => val.id === item.value.id);
         if (index !== -1) {
-          items.value[index] = { ...userData}; // Use userData para atualizar
+          items.value[index] = { ...userData }; // Use userData para atualizar
         }
       } else {
         // Adicionar novo registro
-        items.value.push({ ...userData}); // Use userData para inserir
+        items.value.push({ ...userData }); // Use userData para inserir
       }
 
       const data = await fetchData();
       items.value = data; // Recarregar os dados para exibir as alterações
+      select_options.value = [{key: null, value: '---'}, ...buildTreeOptions(data)]
     } catch (error) {
       console.error("Error saving item:", error);
       toast.add({
         severity: "error",
         summary: "Error",
         detail: "An error occurred while saving the item.",
-        life: 3000,
+        life: 3000
       });
     }
   }
 }
+
 function editItem(selectedItem) {
-  item.value = { ...selectedItem };
+ 
+  item.value = { 
+    id: selectedItem.key,
+    parent_id: selectedItem.parent_id,
+    name: selectedItem.data.name,
+    type: selectedItem.data.type,
+    description: selectedItem.data.description
+   };
+  lista.value = [{key: null, value: '------'}, ...items.value.map(x => ({ key: x.id, value: x.name }))]
+
   itemDialog.value = true;
 }
 
 function confirmDeleteItem(selectedItem) {
-  item.value = selectedItem;
+  console.log("Selected item for deletion:", selectedItem);
+  item.value = {id: selectedItem.key, ...selectedItem}
   deleteItemDialog.value = true;
 }
 
@@ -432,10 +559,10 @@ async function deleteItem() {
       // Excluiu com sucesso no banco de dados
       // Se necessário, atualize a lista localmente ou busque os dados novamente
       // items.value = items.value.filter((val) => val.id !== item.value.id); //Remova esta linha se voce for buscar os dados novamente.
-      
+
       // Atualize a lista localmente
       items.value = items.value.filter(val => val.id !== item.value.id);
-
+      loadData()
       toast.add({
         severity: "success",
         summary: "Successful",
@@ -507,5 +634,4 @@ function formatCurrency(value) {
     });
   return;
 }
-
 </script>

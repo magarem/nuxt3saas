@@ -121,59 +121,59 @@
     >
       <div class="flex flex-col gap-6">
         <template v-for="col in columns" :key="col.field">
-          
-         <div v-if="col.editTemplate && !col.hide_editForm" class="mb-0">
-  <label :for="col.field" class="block font-bold mb-2">
-    {{ col.header }}
-  </label>
+          <div v-if="col.editTemplate && !col.hide_editForm" class="mb-0">
+            <label :for="col.field" class="block font-bold mb-2">
+              {{ col.header }}
+            </label>
 
-  <!-- Campo de dinheiro -->
-  <money3
-    v-if="col.editTemplate === 'money'"
-    v-model="item[col.field]"
-    v-bind="config"
-    class="p-inputtext p-component"
-  />
+            <!-- Campo de dinheiro -->
+            <money3
+              v-if="col.editTemplate === 'money'"
+              v-model="item[col.field]"
+              v-bind="config"
+              class="p-inputtext p-component"
+            />
 
-  <!-- Campo de seleção -->
-  <Select
-    v-else-if="col.editTemplate === 'Select'"
-    v-model="item[col.field]"
-    :options="col.options"
-    optionLabel="value"
-    placeholder="Selecione"
-    checkmark
-    :highlightOnSelect="false"
-    class="w-full md:w-56"
-  />
+            <!-- Campo de seleção -->
+             
+            <Select
+              v-else-if="col.editTemplate === 'Select'"
+              v-model="item[col.field]"
+              :options="col.options"
+              optionLabel="value"
+              optionValue="key"
+              placeholder="Selecione"
+              checkmark
+              :highlightOnSelect="false"
+              class="w-full md:w-56"
+            />
 
-  <!-- Campo de data -->
-  <Calendar
-    v-else-if="col.editTemplate === 'calendar'"
-    v-model="item[col.field]"
-    dateFormat="dd/mm/yy"
-    :locale="brLocale"
-    showIcon
-    class="w-full"
-  />
+            <!-- Campo de data -->
+            <Calendar
+              v-else-if="col.editTemplate === 'calendar'"
+              v-model="item[col.field]"
+              dateFormat="dd/mm/yy"
+              :locale="brLocale"
+              showIcon
+              class="w-full"
+            />
 
-  <!-- Componente genérico personalizado -->
-  <component
-    v-else
-    :is="col.editTemplate"
-    v-model="item[col.field]"
-    :item="item"
-    :options="col.options"
-    :submitted="submitted"
-    :field="col.field"
-  />
+            <!-- Componente genérico personalizado -->
+            <component
+              v-else
+              :is="col.editTemplate"
+              v-model="item[col.field]"
+              :item="item"
+              :options="col.options"
+              :submitted="submitted"
+              :field="col.field"
+            />
 
-  <!-- Validação -->
-  <small v-if="submitted && !item[col.field]" class="text-red-500">
-    {{ col.header }} é obrigatório.
-  </small>
-</div>
-
+            <!-- Validação -->
+            <small v-if="submitted && !item[col.field]" class="text-red-500">
+              {{ col.header }} é obrigatório.
+            </small>
+          </div>
         </template>
       </div>
 
@@ -234,6 +234,7 @@
     </Dialog>
   </div>
 </template>
+
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
@@ -360,20 +361,20 @@ const columns = ref([
     editTemplate: InputText
   },
   {
+    field: "category_id",
+    header: "Categoria",
+    sortable: true,
+    style: { "min-width": "10rem" },
+    editTemplate: "Select",
+    options: categoryOptions,
+    hidden: true
+  },
+  {
     field: "doc",
     header: "Documento",
     sortable: true,
     style: { "min-width": "7rem" },
     editTemplate: InputText
-  },
-  {
-    field: "category_id",
-    header: "Categoria",
-    sortable: true,
-    style: { "min-width": "10rem" },
-    editTemplate: 'Select',
-    options: categoryOptions,
-    hidden: true
   },
   {
     field: "category",
@@ -403,7 +404,7 @@ const columns = ref([
     header: "Contato",
     sortable: true,
     style: { "min-width": "15rem" },
-    editTemplate: 'Select',
+    editTemplate: "Select",
     options: contactsOptions,
     hidden: true
   },
@@ -419,6 +420,36 @@ const columns = ref([
 
 item.value.tipo = "entrada";
 
+function buildTreeOptions(data) {
+  const map = new Map();
+  const tree = [];
+
+  // 1. Indexar por id
+  data.forEach(item => map.set(item.id, { ...item, children: [] }));
+
+  // 2. Montar estrutura em árvore
+  data.forEach(item => {
+    if (item.parent_id) {
+      const parent = map.get(item.parent_id);
+      if (parent) parent.children.push(map.get(item.id));
+    } else {
+      tree.push(map.get(item.id));
+    }
+  });
+
+  // 3. Gerar lista com caminho formatado
+  const result = [];
+
+  function walk(node, path) {
+    const fullPath = path ? `${path} >> ${node.name}` : node.name;
+    result.push({ key: node.id, value: fullPath });
+    node.children.forEach(child => walk(child, fullPath));
+  }
+
+  tree.forEach(root => walk(root, ''));
+  return result;
+}
+
 const visibleColumns = computed(() => {
   return columns.value.filter(col => !col.hidden);
 });
@@ -427,36 +458,64 @@ const fetchDados = async newVal => {
   //fc.name AS category,
   const data = await executeQuery(
     domain,
-    `SELECT
-        ft.id,
-        ft.amount,
-        ft.doc,
-        ft.description,
-        ft.type,
-        ft.date,
-        fc.name AS category,
-        fc.id AS category_id,
-        
-        u.nome AS user,
-        c.id AS related_id,
-        c.name AS contact_name
-      FROM financial_transactions ft
-
-      LEFT JOIN financial_categories fc ON ft.category_id = fc.id
-      LEFT JOIN users u ON ft.created_by = u.id
-      LEFT JOIN contacts c ON ft.related_id = c.id
-      WHERE ft.type like '${newVal}'
-      ORDER BY ft.date DESC;`
+    ` WITH RECURSIVE category_path AS (
+      SELECT id, parent_id, name, type, name AS full_path
+      FROM financial_categories
+      WHERE parent_id IS NULL
+      UNION ALL
+      SELECT fc.id, fc.parent_id, fc.name, fc.type, cp.full_path || ' › ' || fc.name
+      FROM financial_categories fc
+      JOIN category_path cp ON fc.parent_id = cp.id
+    )
+    SELECT
+      ft.id,
+      ft.amount,
+      ft.doc,
+      ft.description,
+      ft.type,
+      ft.date,
+      fc.id AS category_id,
+      cp.full_path AS category,
+      u.nome AS user,
+      c.id AS related_id,
+      c.name AS contact_name
+    FROM financial_transactions ft
+    LEFT JOIN financial_categories fc ON ft.category_id = fc.id
+    LEFT JOIN category_path cp ON fc.id = cp.id
+    LEFT JOIN users u ON ft.created_by = u.id
+    LEFT JOIN contacts c ON ft.related_id = c.id
+    WHERE ft.type LIKE '${newVal}'
+    ORDER BY ft.date DESC;`
   );
   // const data = await executeQuery(domain, `SELECT * FROM financial_transactions where type like '${newVal}'`)
 
   console.log("444444$$", data);
-  const cats = await executeQuery(
+ 
+ 
+   const cats = await executeQuery(
     domain,
-    `SELECT id, name FROM financial_categories where type like '${newVal}'`
+    `
+  SELECT 
+  t1.id,
+  t1.parent_id as parent_id,
+  t2.name AS parent_name,
+  t1.name,
+  t1.type,
+  t1.description
+FROM financial_categories t1
+LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id;
+  `
   );
+
+
+
+
+
+categoryOptions.value = [{key: null, value: '---'}, ...buildTreeOptions(cats)]
+
+
   const contacts = await executeQuery(domain, `SELECT * FROM contacts`);
-  categoryOptions.value = cats.map(cat => ({ value: cat.name, key: cat.id }));
+  // categoryOptions.value = cats.map(cat => ({ value: cat.name, key: cat.id }));
   contactsOptions.value = contacts.map(cat => ({
     value: cat.name,
     key: cat.id
@@ -519,8 +578,8 @@ async function saveItem() {
   const dataToSave = {
     ...item.value,
     created_by: ret.value.user.id,
-    category_id: item.value.category_id?.key||0,
-    related_id: item.value.related_id?.key||0,
+   // category_id: item.value.category_id?.key || 0,
+    //related_id: item.value.related_id?.key || 0
   };
 
   delete dataToSave.category;
