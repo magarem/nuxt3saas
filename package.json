@@ -21,6 +21,7 @@
     "@unhead/vue": "^2.0.2",
     "bcrypt": "^5.1.1",
     "better-sqlite3": "^11.9.1",
+    "chart.js": "^4.4.9",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "mailersend": "^2.5.0",
@@ -36,6 +37,7 @@
     "uuid": "^11.1.0",
     "v-money3": "^3.24.1",
     "vue": "^3.5.13",
+    "vue-chartjs": "^5.3.2",
     "vue-router": "^4.5.0",
     "ws": "^8.18.2"
   },

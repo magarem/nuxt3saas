@@ -135,7 +135,7 @@
             />
 
             <!-- Campo de seleção -->
-             
+
             <Select
               v-else-if="col.editTemplate === 'Select'"
               v-model="item[col.field]"
@@ -261,7 +261,7 @@ const selectedItems = ref([]);
 const submitted = ref(false);
 
 const amount = ref(null);
-const op = route.query.op;
+const op = computed(() => route.query.op)
 
 const { getUser } = useUser();
 const { data: ret, error } = await getUser();
@@ -446,7 +446,7 @@ function buildTreeOptions(data) {
     node.children.forEach(child => walk(child, fullPath));
   }
 
-  tree.forEach(root => walk(root, ''));
+  tree.forEach(root => walk(root, ""));
   return result;
 }
 
@@ -456,16 +456,21 @@ const visibleColumns = computed(() => {
 
 const fetchDados = async newVal => {
   //fc.name AS category,
+  console.log('newVal', newVal)
+  // alert(JSON.stringify(newVal))
   const data = await executeQuery(
     domain,
     ` WITH RECURSIVE category_path AS (
       SELECT id, parent_id, name, type, name AS full_path
       FROM financial_categories
-      WHERE parent_id IS NULL
+      WHERE parent_id IS NULL AND type = '${newVal}'
+
       UNION ALL
+
       SELECT fc.id, fc.parent_id, fc.name, fc.type, cp.full_path || ' › ' || fc.name
       FROM financial_categories fc
       JOIN category_path cp ON fc.parent_id = cp.id
+      where fc.type = '${newVal}'
     )
     SELECT
       ft.id,
@@ -490,29 +495,27 @@ const fetchDados = async newVal => {
   // const data = await executeQuery(domain, `SELECT * FROM financial_transactions where type like '${newVal}'`)
 
   console.log("444444$$", data);
- 
- 
-   const cats = await executeQuery(
+
+  const cats = await executeQuery(
     domain,
     `
-  SELECT 
-  t1.id,
-  t1.parent_id as parent_id,
-  t2.name AS parent_name,
-  t1.name,
-  t1.type,
-  t1.description
-FROM financial_categories t1
-LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id;
+      SELECT 
+      t1.id,
+      t1.parent_id as parent_id,
+      t2.name AS parent_name,
+      t1.name,
+      t1.type,
+      t1.description
+    FROM financial_categories t1
+    LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id
+    WHERE t1.type = '${newVal}'
   `
   );
 
-
-
-
-
-categoryOptions.value = [{key: null, value: '---'}, ...buildTreeOptions(cats)]
-
+  categoryOptions.value = [
+    { key: null, value: "---" },
+    ...buildTreeOptions(cats)
+  ];
 
   const contacts = await executeQuery(domain, `SELECT * FROM contacts`);
   // categoryOptions.value = cats.map(cat => ({ value: cat.name, key: cat.id }));
@@ -524,7 +527,7 @@ categoryOptions.value = [{key: null, value: '---'}, ...buildTreeOptions(cats)]
 };
 
 onMounted(async () => {
-  fetchDados(op);
+  await fetchDados(op.value);
 });
 
 async function executeQuery(domain, sql) {
@@ -577,8 +580,8 @@ async function saveItem() {
 
   const dataToSave = {
     ...item.value,
-    created_by: ret.value.user.id,
-   // category_id: item.value.category_id?.key || 0,
+    created_by: ret.value.user.id
+    // category_id: item.value.category_id?.key || 0,
     //related_id: item.value.related_id?.key || 0
   };
 
@@ -589,6 +592,8 @@ async function saveItem() {
 
   console.log("item.value>>>", item.value);
   console.log("dataToSave>>>", dataToSave);
+
+
 
   const isNew = !dataToSave.id;
 
@@ -615,8 +620,14 @@ async function saveItem() {
       detail: isNew ? "Criado" : "Atualizado",
       life: 3000
     });
-    fetchDados(op);
+    
     itemDialog.value = false;
+    console.log('>>>>', op);
+    
+    // alert()
+    // alert(JSON.stringify(op))
+   await fetchDados(op.value);
+
   }
 }
 
@@ -654,7 +665,7 @@ async function deleteItem() {
     domain,
     `DELETE FROM financial_transactions WHERE id = ${item.value.id}`
   );
-  fetchDados(op);
+  fetchDados(op.value);
   deleteItemDialog.value = false;
   item.value = {};
   toast.add({ severity: "success", summary: "Removido", life: 3000 });
