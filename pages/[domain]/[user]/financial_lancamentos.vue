@@ -499,22 +499,50 @@ const fetchDados = async newVal => {
   const cats = await executeQuery(
     domain,
     `
-      SELECT 
-      t1.id,
-      t1.parent_id as parent_id,
-      t2.name AS parent_name,
-      t1.name,
-      t1.type,
-      t1.description
-    FROM financial_categories t1
-    LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id
-    WHERE t1.type = '${newVal}'
+    WITH RECURSIVE category_tree AS (
+  SELECT 
+    id,
+    parent_id,
+    name,
+    type,
+    node_type,
+    name AS full_path
+  FROM financial_categories
+  WHERE parent_id IS NULL
+
+  UNION ALL
+
+  SELECT 
+    fc.id,
+    fc.parent_id,
+    fc.name,
+    fc.type,
+    fc.node_type,
+    ct.full_path || ' › ' || fc.name
+  FROM financial_categories fc
+  JOIN category_tree ct ON fc.parent_id = ct.id
+)
+SELECT 
+  id AS key, 
+  full_path AS value
+FROM category_tree
+WHERE 
+(node_type is null or 
+  node_type != 'grupo')
+  AND type = '${newVal}' 
+  
+ORDER BY full_path;
   `
   );
 
+  // categoryOptions.value = [
+  //   { key: null, value: "---" },
+  //   ...buildTreeOptions(cats)
+  // ];
+  
   categoryOptions.value = [
     { key: null, value: "---" },
-    ...buildTreeOptions(cats)
+    ...cats
   ];
 
   const contacts = await executeQuery(domain, `SELECT * FROM contacts`);

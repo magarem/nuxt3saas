@@ -1,23 +1,30 @@
 <template>
   <div>
     <div class="card">
-   
+      
       <Toolbar class="mb-1">
         <template #start>
           <Button
-            label="New"
+            label="Nova pasta"
             icon="pi pi-plus"
             severity="secondary"
             class="mr-2"
-            @click="openNew"
+            @click="openNew('grupo')"
           />
           <Button
-            label="Delete"
+            label="Nova categoria"
+            icon="pi pi-plus"
+            severity="secondary"
+            class="mr-2"
+            @click="openNew('item')"
+          />
+          <!-- <Button
+            label="Exclusão"
             icon="pi pi-trash"
             severity="secondary"
             @click="confirmDeleteSelected"
             :disabled="!selectedItems || !selectedItems.length"
-          />
+          /> -->
         </template>
 
         <template #end>
@@ -29,11 +36,14 @@
           />
         </template>
       </Toolbar>
-      
-      <TreeTable :value="categoryTree" tableStyle="min-width: 50rem">
-   
 
-     
+      <TreeTable
+        v-model:selectionKeys="selectedKey" 
+        :value="categoryTree"
+        tableStyle="min-width: 50rem"
+        selectionMode="single"
+        dataKey="key"
+      >
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
             <h4 class="m-0">Financeiro - Categorias</h4>
@@ -55,9 +65,14 @@
           :exportable="false"
         ></Column>
 
-         <Column field="name" header="Name" expander style="width: 34%"></Column>
-        <Column field="type" header="Tipo" style="width: 33%"></Column>
-        <Column field="description" header="description" style="width: 33%"></Column>
+        <Column field="name" header="Nome" expander style="width: 25%"></Column>
+        <Column field="type" header="Entrada/Saída" style="width: 20%"></Column>
+        <Column field="node_type" header="Tipo" style="width: 15%"></Column>
+        <Column
+          field="description"
+          header="description"
+          style="width: 50%"
+        ></Column>
 
         <Column :exportable="false" style="min-width: 12rem">
           <template #body="slotProps">
@@ -83,7 +98,7 @@
     <Dialog
       v-model:visible="itemDialog"
       :style="{ width: '450px' }"
-      header="Item Details"
+      :header="`Novo - ${item.node_type}`"
       :modal="true"
     >
       <div class="flex flex-col gap-6">
@@ -135,7 +150,10 @@
             />
 
             <!-- Validação -->
-            <small v-if="submitted && !item[col.field]" class="text-red-500">
+            <small
+              v-if="submitted && (col.notNull && !item[col.field])"
+              class="text-red-500"
+            >
               {{ col.header }} é obrigatório.
             </small>
           </div>
@@ -222,42 +240,48 @@ const deleteItemDialog = ref(false);
 const deleteItemsDialog = ref(false);
 const item = ref({});
 const lista = ref({});
-const categoryTree = ref([])
+const categoryTree = ref([]);
 const selectedItems = ref([]);
 const select_options = ref([]);
+const original_select_options = ref([]);
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const submitted = ref(false);
+
 const route = useRoute();
 const domain = route.params.domain;
-
+const original_items = ref()
 const visibleColumns = computed(() => {
   return columns.value.filter(col => !col.hidden);
 });
 
+const selectedKey = ref();
+const metaKey = ref(true)
+
+// Evento ao selecionar
+function onNodeSelect(newSelection) {
+  console.log('Selecionado:', newSelection)
+  alert(newSelection)
+}
+
+function findNodeByKey(tree, key) {
+  for (const node of tree) {
+    if (node.key === key) {
+      return node;
+    }
+    if (node.children) {
+      const found = findNodeByKey(node.children, key);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 const columns = ref([
-  
-  {
-    field: "parent_id",
-    header: "Vinculo",
-    sortable: true,
-    style: { "min-width": "16rem" },
-    editTemplate: "Select",
-    options: select_options,
-    optionLabel: "value",
-    optionValue: "key"
-  },
-  {
-    field: "name",
-    header: "Nome",
-    sortable: true,
-    style: { "min-width": "16rem" },
-    editTemplate: InputText
-  },
   {
     field: "type",
-    header: "Tipo",
+    header: "Entrada/Saída",
     sortable: true,
     style: { "min-width": "10rem" },
     editTemplate: "Select",
@@ -266,7 +290,37 @@ const columns = ref([
       { key: "saída", value: "saída" }
     ],
     optionLabel: "value",
+    optionValue: "key",
+    notNull: true
+  },
+  {
+    field: "parent_id",
+    header: "Pasta",
+    sortable: true,
+    style: { "min-width": "16rem" },
+    editTemplate: "Select",
+    options: select_options,
+    optionLabel: "value",
     optionValue: "key"
+  },
+  // {
+  //   field: "node_type",
+  //   header: "Tipo",
+  //   sortable: true,
+  //   style: { "min-width": "10rem" },
+  //   editTemplate: "Select",
+  //   options: [{ key: "item", value: "Item" }, { key: "grupo", value: "Grupo" }],
+  //   optionLabel: "value",
+  //   optionValue: "key",
+  //   notNull: true
+  // },
+  {
+    field: "name",
+    header: "Nome",
+    sortable: true,
+    style: { "min-width": "16rem" },
+    editTemplate: InputText,
+    notNull: true
   },
   {
     field: "description",
@@ -280,11 +334,20 @@ const columns = ref([
 const loadData = async () => {
   const data = await fetchData();
   items.value = data;
-  select_options.value = [{key: null, value: '---'}, ...buildTreeOptions(data)]
+  // select_options.value = [{key: null, value: '---'}, ...buildTreeOptions(data)]
+
+  const data2 = await fetchData2();
+  select_options.value = [
+    { key: null, value: "---" },
+    ...buildTreeOptions(data2)
+  ];
+  original_items.value = data;
+  original_select_options.value = [...select_options.value];
+  console.log("select_options.value:", select_options.value);
 };
 
 onMounted(async () => {
- loadData()
+  loadData();
 });
 
 function formatValue(value) {
@@ -332,20 +395,30 @@ async function executeQueryRun(domain, sql) {
   }
 }
 
-function buildTreeOptions(data) {
+function buildTreeOptions(data, type = "") {
   const map = new Map();
   const tree = [];
 
-  // 1. Indexar por id
-  data.forEach(item => map.set(item.id, { ...item, children: [] }));
+  // 1. Indexar por id (apenas os tipos válidos)
+  data.forEach(item => {
+    if (type != "") {
+      if (item.type == type && item.node_type == "grupo") {
+        map.set(item.id, { ...item, children: [] });
+      }
+    } else {
+      if (item.node_type == "grupo") {
+        map.set(item.id, { ...item, children: [] });
+      }
+    }
+  });
 
   // 2. Montar estrutura em árvore
-  data.forEach(item => {
-    if (item.parent_id) {
+  map.forEach(item => {
+    if (item.parent_id && map.has(item.parent_id)) {
       const parent = map.get(item.parent_id);
-      if (parent) parent.children.push(map.get(item.id));
+      parent.children.push(item);
     } else {
-      tree.push(map.get(item.id));
+      tree.push(item);
     }
   });
 
@@ -358,9 +431,28 @@ function buildTreeOptions(data) {
     node.children.forEach(child => walk(child, fullPath));
   }
 
-  tree.forEach(root => walk(root, ''));
+  tree.forEach(root => walk(root, ""));
   return result;
 }
+
+watch(
+  () => item.value.type,
+  newVal => {
+    if (newVal) {
+      // alert(newVal)
+      select_options.value = [
+        { key: null, value: "---" },
+        ...buildTreeOptions(items.value, newVal)
+      ];
+      // alert(JSON.stringify(select_options.value, null, 2))
+    }
+  }
+);
+// const filteredOptions = computed(() => {
+//   // if (!item.value.type) return []
+//   alert(item.value.type)
+//   // return buildTreeOptions(categorias.value, selectedType.value)
+// })
 
 function buildCategoryTree(flatCategories) {
   // 1. Criar um mapa de ID para nó e uma lista de nós raiz
@@ -375,6 +467,7 @@ function buildCategoryTree(flatCategories) {
       data: {
         name: item.name,
         type: item.type,
+        node_type: item.node_type,
         description: item.description
       },
       children: []
@@ -396,20 +489,20 @@ function buildCategoryTree(flatCategories) {
     }
   });
 
-  return tree;
+  return [{ "key": null, "parent_id": null, "data": { "name": "---", "type": "---", "node_type": "---", "description": null }}, ...tree];
 }
 
 async function fetchData() {
   // const route = useRoute(
   const data = await executeQuery(
     domain,
-    `
-  SELECT 
+    ` SELECT 
   t1.id,
   t1.parent_id as parent_id,
   t2.name AS parent_name,
   t1.name,
   t1.type,
+  t1.node_type,
   t1.description
 FROM financial_categories t1
 LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id;
@@ -419,14 +512,50 @@ LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id;
   console.log("Fetched data:", data);
 
   // Exemplo de uso:
- 
- categoryTree.value = buildCategoryTree(data);
-console.log(JSON.stringify(categoryTree.value, null, 2));
+
+  categoryTree.value = buildCategoryTree(data);
+  console.log(JSON.stringify(categoryTree.value, null, 2));
   return data;
 }
 
-function openNew() {
+async function fetchData2() {
+  // const route = useRoute(
+  const data = await executeQuery(
+    domain,
+    ` SELECT 
+  t1.id,
+  t1.parent_id as parent_id,
+  t2.name AS parent_name,
+  t1.name,
+  t1.type,
+  t1.node_type,
+  t1.description
+FROM financial_categories t1
+LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id
+WHERE t1.node_type = 'grupo';
+  `
+  );
+
+  console.log("Fetched data2:", data);
+
+  // Exemplo de uso:
+
+  return data;
+}
+
+function openNew(x) {
   item.value = {};
+  item.value.node_type = x;
+  item.value.parent_id = +Object.keys(selectedKey.value)[0]
+
+  if (!item.value.key){
+      const a = findNodeByKey(categoryTree.value, +Object.keys(selectedKey.value)[0])
+       item.value.type = a?.data.type
+
+  }
+  
+  // alert(a.data.type)
+ 
   submitted.value = false;
   itemDialog.value = true;
 }
@@ -440,12 +569,13 @@ async function saveItem() {
   submitted.value = true;
 
   let isValid = true;
-  // for (const col of columns.value) {
-  //   if (col.editTemplate && !item.value[col.field] && col.field !== 'roles') {
-  //     isValid = false;
-  //     break;
-  //   }
-  // }
+
+  for (const col of columns.value) {
+    if (col.editTemplate && (col.notNull && !item.value[col.field])) {
+      isValid = false;
+      break;
+    }
+  }
 
   if (isValid) {
     try {
@@ -512,7 +642,11 @@ async function saveItem() {
 
       const data = await fetchData();
       items.value = data; // Recarregar os dados para exibir as alterações
-      select_options.value = [{key: null, value: '---'}, ...buildTreeOptions(data)]
+      const data2 = await fetchData2();
+      select_options.value = [
+        { key: null, value: "---" },
+        ...buildTreeOptions(data2)
+      ];
     } catch (error) {
       console.error("Error saving item:", error);
       toast.add({
@@ -526,22 +660,25 @@ async function saveItem() {
 }
 
 function editItem(selectedItem) {
- 
-  item.value = { 
+  item.value = {
     id: selectedItem.key,
     parent_id: selectedItem.parent_id,
     name: selectedItem.data.name,
     type: selectedItem.data.type,
+    node_type: selectedItem.data.node_type,
     description: selectedItem.data.description
-   };
-  lista.value = [{key: null, value: '------'}, ...items.value.map(x => ({ key: x.id, value: x.name }))]
+  };
+  lista.value = [
+    { key: null, value: "------" },
+    ...items.value.map(x => ({ key: x.id, value: x.name }))
+  ];
 
   itemDialog.value = true;
 }
 
 function confirmDeleteItem(selectedItem) {
   console.log("Selected item for deletion:", selectedItem);
-  item.value = {id: selectedItem.key, ...selectedItem}
+  item.value = { id: selectedItem.key, ...selectedItem };
   deleteItemDialog.value = true;
 }
 
@@ -562,7 +699,7 @@ async function deleteItem() {
 
       // Atualize a lista localmente
       items.value = items.value.filter(val => val.id !== item.value.id);
-      loadData()
+      loadData();
       toast.add({
         severity: "success",
         summary: "Successful",
