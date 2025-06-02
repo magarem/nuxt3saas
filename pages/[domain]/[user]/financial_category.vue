@@ -43,6 +43,8 @@
         tableStyle="min-width: 50rem"
         selectionMode="single"
         dataKey="key"
+        scrollable
+        scrollHeight="360px"
       >
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
@@ -70,7 +72,7 @@
         <Column field="node_type" header="Tipo" style="width: 15%"></Column>
         <Column
           field="description"
-          header="description"
+          header="Discrição"
           style="width: 50%"
         ></Column>
 
@@ -338,7 +340,6 @@ const loadData = async () => {
 
   const data2 = await fetchData2();
   select_options.value = [
-    { key: null, value: "---" },
     ...buildTreeOptions(data2)
   ];
   original_items.value = data;
@@ -489,7 +490,7 @@ function buildCategoryTree(flatCategories) {
     }
   });
 
-  return [{ "key": null, "parent_id": null, "data": { "name": "---", "type": "---", "node_type": "---", "description": null }}, ...tree];
+  return tree;
 }
 
 async function fetchData() {

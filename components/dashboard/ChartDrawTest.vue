@@ -19,7 +19,7 @@ const chartData = ref({
   labels: ['Janeiro', 'Fevereiro', 'MArço', 'Abril'],
   datasets: [
     {
-      label: 'Acquisitions by year',
+      label: 'Entradas',
       data: [40, 20, 12, 70],
       backgroundColor: '#9BD0F5'
 

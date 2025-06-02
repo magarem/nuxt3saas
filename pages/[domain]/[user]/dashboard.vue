@@ -1,7 +1,7 @@
 <template>
   <div class="p-4">
-    <h3 class="text-lg font-semibold mb-4">ChartDrawTest</h3>
-    <ChartDrawTest />
+    <h3 class="text-lg font-semibold mb-4">Bem vindo!</h3>
+    <!-- <ChartDrawTest /> -->
   </div>
 </template>
 

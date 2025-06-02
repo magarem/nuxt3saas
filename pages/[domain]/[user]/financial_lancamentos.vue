@@ -4,7 +4,7 @@
       <Toolbar class="mb-1">
         <template #start>
           <Button
-            label="New"
+            label="Novo"
             icon="pi pi-plus"
             severity="secondary"
             class="mr-2"
@@ -343,6 +343,7 @@ const filters = ref({
 });
 
 const categoryOptions = ref([]);
+const categoryRelationedOptions = ref([]);
 const contactsOptions = ref([]);
 
 const columns = ref([
@@ -358,7 +359,8 @@ const columns = ref([
     header: "Tipo",
     sortable: true,
     style: { "min-width": "5rem" },
-    editTemplate: InputText
+    editTemplate: "Select",
+    options: [{key: 'entrada', value: 'Entrada'}, {key: 'saída', value: 'Saída'}],
   },
   {
     field: "category_id",
@@ -376,6 +378,22 @@ const columns = ref([
     style: { "min-width": "7rem" },
     editTemplate: InputText
   },
+  // {
+  //   field: "source_category_id",
+  //   header: "Categoria - Origem",
+  //   sortable: true,
+  //   style: { "min-width": "10rem" },
+  //   editTemplate: "Select",
+  //   options: categoryRelationedOptions,
+  //   hidden: true
+  // },
+  {
+    field: "amount",
+    header: "Valor",
+    sortable: true,
+    style: { "min-width": "5rem" },
+    editTemplate: "money"
+  },
   {
     field: "category",
     header: "Categoria",
@@ -391,13 +409,6 @@ const columns = ref([
     sortable: true,
     style: { "min-width": "10rem" },
     editTemplate: InputText
-  },
-  {
-    field: "amount",
-    header: "Valor",
-    sortable: true,
-    style: { "min-width": "5rem" },
-    editTemplate: "money"
   },
   {
     field: "related_id",
@@ -463,14 +474,13 @@ const fetchDados = async newVal => {
     ` WITH RECURSIVE category_path AS (
       SELECT id, parent_id, name, type, name AS full_path
       FROM financial_categories
-      WHERE parent_id IS NULL AND type = '${newVal}'
+      WHERE parent_id IS NULL 
 
       UNION ALL
 
       SELECT fc.id, fc.parent_id, fc.name, fc.type, cp.full_path || ' › ' || fc.name
       FROM financial_categories fc
       JOIN category_path cp ON fc.parent_id = cp.id
-      where fc.type = '${newVal}'
     )
     SELECT
       ft.id,
@@ -479,6 +489,7 @@ const fetchDados = async newVal => {
       ft.description,
       ft.type,
       ft.date,
+      ft.source_category_id,
       fc.id AS category_id,
       cp.full_path AS category,
       u.nome AS user,
@@ -489,7 +500,6 @@ const fetchDados = async newVal => {
     LEFT JOIN category_path cp ON fc.id = cp.id
     LEFT JOIN users u ON ft.created_by = u.id
     LEFT JOIN contacts c ON ft.related_id = c.id
-    WHERE ft.type LIKE '${newVal}'
     ORDER BY ft.date DESC;`
   );
   // const data = await executeQuery(domain, `SELECT * FROM financial_transactions where type like '${newVal}'`)
@@ -535,14 +545,54 @@ ORDER BY full_path;
   `
   );
 
-  // categoryOptions.value = [
-  //   { key: null, value: "---" },
-  //   ...buildTreeOptions(cats)
-  // ];
+
+  const cats_relationed = await executeQuery(
+    domain,
+    `
+    WITH RECURSIVE category_tree AS (
+  SELECT 
+    id,
+    parent_id,
+    name,
+    type,
+    node_type,
+    name AS full_path
+  FROM financial_categories
+  WHERE parent_id IS NULL
+
+  UNION ALL
+
+  SELECT 
+    fc.id,
+    fc.parent_id,
+    fc.name,
+    fc.type,
+    fc.node_type,
+    ct.full_path || ' › ' || fc.name
+  FROM financial_categories fc
+  JOIN category_tree ct ON fc.parent_id = ct.id
+)
+SELECT 
+  id AS key, 
+  full_path AS value
+FROM category_tree
+WHERE 
+(node_type is null or 
+  node_type != 'grupo')
+  AND type = 'entrada' 
   
+ORDER BY full_path;
+  `
+  );
+
   categoryOptions.value = [
     { key: null, value: "---" },
     ...cats
+  ];
+  
+  categoryRelationedOptions.value = [
+    { key: null, value: "---" },
+    ...cats_relationed
   ];
 
   const contacts = await executeQuery(domain, `SELECT * FROM contacts`);
@@ -720,9 +770,17 @@ async function deleteSelectedItems() {
 }
 
 // Reage à mudança na query string
+// watch(
+//   () => route.query.op,
+//   newVal => {
+//     fetchDados(newVal);
+//   }
+// );
+
 watch(
-  () => route.query.op,
+  () => item.value.type,
   newVal => {
+    // alert(items.value.type)
     fetchDados(newVal);
   }
 );

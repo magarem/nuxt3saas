@@ -83,6 +83,11 @@ const model = ref([
         label: "Financeiro",
         icon: "pi pi-fw pi-id-card",
         items: [
+          {
+            label: "Relatórios",
+            icon: "pi pi-fw pi-id-card",
+            to: `/${domain}/${user}/reports`
+          },
            {
             label: "Categorias",
             icon: "pi pi-fw pi-id-card",
@@ -91,19 +96,24 @@ const model = ref([
           {
             label: "Lançamentos",
             icon: "pi pi-fw pi-id-card",
-             items: [
-                {
-                  label: "Entrada",
-                  icon: "pi pi-fw pi-id-card",
-                  to: `/${domain}/${user}/financial_lancamentos?op=entrada`
-                },
-                {
-                  label: "Saída",
-                  icon: "pi pi-fw pi-id-card",
-                  to: `/${domain}/${user}/financial_lancamentos?op=saída`
-                }
-              ]
+            to: `/${domain}/${user}/financial_lancamentos`
           }
+          // {
+          //   label: "Lançamentos",
+          //   icon: "pi pi-fw pi-id-card",
+          //    items: [
+          //       {
+          //         label: "Entrada",
+          //         icon: "pi pi-fw pi-id-card",
+          //         to: `/${domain}/${user}/financial_lancamentos?op=entrada`
+          //       },
+          //       {
+          //         label: "Saída",
+          //         icon: "pi pi-fw pi-id-card",
+          //         to: `/${domain}/${user}/financial_lancamentos?op=saída`
+          //       }
+          //     ]
+          // }
         ]
       }
     ]
