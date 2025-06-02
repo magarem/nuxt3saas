@@ -626,7 +626,7 @@ async function saveItem() {
         life: 3000
       });
 
-      itemDialog.value = false;
+      // itemDialog.value = false;
       item.value = {};
 
       // 3. Atualizar a lista localmente

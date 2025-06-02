@@ -699,7 +699,9 @@ async function saveItem() {
       life: 3000
     });
     
-    itemDialog.value = false;
+    // itemDialog.value = false;
+    item.value = {};
+    item.value.date = new Date();
     console.log('>>>>', op);
     
     // alert()
