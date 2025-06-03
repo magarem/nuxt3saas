@@ -115,72 +115,145 @@
 
     <Dialog
       v-model:visible="itemDialog"
-      :style="{ width: '450px' }"
-      header="Item Details"
+      :style="{ width: '650px', padding: '10px 15px 10px 15px' }"
+      header="Edição"
       :modal="true"
     >
-      <div class="flex flex-col gap-6">
-        <template v-for="col in columns" :key="col.field">
-          <div v-if="col.editTemplate && !col.hide_editForm" class="mb-0">
-            <label :for="col.field" class="block font-bold mb-2">
-              {{ col.header }}
-            </label>
+     <form @submit.prevent="saveItem"> <!-- Adicione esta linha -->
+      <div class="grid grid-cols-3 gap-4  ">
+        <div class="mb-3">
+          <label for="item.date" class="block font-bold mb-2">
+            Data:
+          </label>
+          <!-- Campo de data -->
+          <Calendar
+            id="item.date"
+            v-model="item.date"
+            dateFormat="dd/mm/yy"
+            :locale="brLocale"
+            showIcon
+            class="md:w-40"
+          />
+        </div>
 
-            <!-- Campo de dinheiro -->
-            <money3
-              v-if="col.editTemplate === 'money'"
-              v-model="item[col.field]"
-              v-bind="config"
-              class="p-inputtext p-component"
-            />
+        <div>
+          <label for="item.type" class="block font-bold mb-2">
+            Entrada/Saída:
+          </label>
+          <Select
+            id="item.type"
+            v-model="item.type"
+            :options="item_type_options"
+            optionLabel="value"
+            optionValue="key"
+            placeholder="Selecione"
+            checkmark
+            :highlightOnSelect="false"
+            class="md:w-40"
+          />
+        </div>
+         <div>
+          <label for="item.doc" class="block font-bold mb-2">
+            Documento:
+          </label>
+          <InputText id="doc" v-model="item.doc" class="md:w-50"/>
+        </div>
+        <div class="col-span-3 mb-3">
+          <label for="item.category" class="block font-bold mb-2">
+            Categoria:
+          </label>
+           <!-- <TreeSelect v-model="item.category_id" filter filterMode="lenient" :options="categoryTree" selectionMode="single" display="chip" :maxSelectedLabels="1" placeholder="Selecione" class="md:w-80 w-full" /> -->
+          <AutoComplete
+            id="item.category_id"
+            :disabled="!flag_categorias_select_active"
+            v-model="item.category_id"
+            :suggestions="filteredItems"
+            @complete="searchItems($event)"
+            placeholder="Buscar um item"
+            dropdown
+            field="value"
+            forceSelection
+            :dropdownMode="'current'"
+            optionLabel="value"
+           class="w-full"
+            :inputClass="'w-full'"
+          ></AutoComplete>
+        </div>
+        <div class="col-span-3 mb-3">
+          <label :for="item.description" class="block font-bold mb-2">
+            Descrição
+          </label>
+          <Textarea
+            :id="item.description"
+            v-model="item.description"
+            rows="2"
+            cols="67"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="item.amount" class="block font-bold mb-2">
+            Valor
+          </label>
+          <money3
+            id="item.amount"
+            v-model="item.amount"
+            v-bind="config"
+            class="p-inputtext p-component md:w-40"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="item.amount" class="block font-bold mb-2">
+            Forma de pagamento
+          </label>
+          <InputText
+            id="item.paymentMethod"
+            v-model="item.paymentMethod"
+            v-bind="config"
+            class="p-inputtext p-component md:w-40"
+          />
+        </div>
 
-            <!-- Campo de seleção -->
+        <div class="col-span-1">
+          <label for="item.type" class="block font-bold mb-2">
+            Contato relacionado:
+          </label>
+           <AutoComplete
+            id="item.related_id"
+            v-model="item.related_id"
+            :suggestions="filteredItems_related_id"
+            @complete="searchItems_related_id($event)"
+            field="value"
+            placeholder="Buscar um item"
+            dropdown
+            forceSelection
+            :dropdownMode="'current'"
+            optionLabel="value"
+            optionValue="key"
+            class="w-full"
+            :inputClass="'w-full'"
+          ></AutoComplete>
+          
+        </div>
 
-            <Select
-              v-else-if="col.editTemplate === 'Select'"
-              v-model="item[col.field]"
-              :options="col.options"
-              optionLabel="value"
-              optionValue="key"
-              placeholder="Selecione"
-              checkmark
-              :highlightOnSelect="false"
-              class="w-full md:w-56"
-            />
-
-            <!-- Campo de data -->
-            <Calendar
-              v-else-if="col.editTemplate === 'calendar'"
-              v-model="item[col.field]"
-              dateFormat="dd/mm/yy"
-              :locale="brLocale"
-              showIcon
-              class="w-full"
-            />
-
-            <!-- Componente genérico personalizado -->
-            <component
-              v-else
-              :is="col.editTemplate"
-              v-model="item[col.field]"
-              :item="item"
-              :options="col.options"
-              :submitted="submitted"
-              :field="col.field"
-            />
-
-            <!-- Validação -->
-            <small v-if="submitted && !item[col.field]" class="text-red-500">
-              {{ col.header }} é obrigatório.
-            </small>
-          </div>
-        </template>
+       
+        <div class="col-span-2">
+          <label :for="item.decription" class="block font-bold mb-2">
+            Obs
+          </label>
+          <Textarea
+            :id="item.obs"
+            v-model="item.obs"
+            rows="2"
+            cols="67"
+          />
+        </div>
       </div>
-
+      </form>
       <template #footer>
         <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
         <Button label="Save" icon="pi pi-check" @click="saveItem" />
       </template>
+      
     </Dialog>
 
     <Dialog
@@ -250,7 +323,7 @@ import { ca } from "date-fns/locale";
 const toast = useToast();
 const route = useRoute();
 const domain = route.params.domain;
-
+const filteredItems = ref([]);
 const dt = ref();
 const items = ref([]);
 const item = ref({});
@@ -259,17 +332,63 @@ const deleteItemDialog = ref(false);
 const deleteItemsDialog = ref(false);
 const selectedItems = ref([]);
 const submitted = ref(false);
-
+const filteredItems_related_id  = ref([])
 const amount = ref(null);
-const op = computed(() => route.query.op)
-
+const flag_categorias_select_active = ref(false)
+const op = computed(() => route.query.op);
+const item_type_options = [
+  { key: "entrada", value: "Entrada" },
+  { key: "saída", value: "Saída" }
+];
+const flg_isEdit = ref(false)
 const { getUser } = useUser();
 const { data: ret, error } = await getUser();
 console.log("user>22>>>:", ret.value.user.id);
 
-function go(x) {
-  alert(x);
+
+function buildCategoryTree(categories, parentId = null) {
+  return categories
+    .filter(category => category.parent_id === parentId)
+    .map(category => ({
+      key: category.id,
+      label: category.name,
+      type: category.type,
+      description: category.description,
+      node_type: category.node_type,
+      children: buildCategoryTree(categories, category.id)
+    }));
 }
+
+const searchItems = event => {
+  setTimeout(() => {
+    if (!event.query.trim().length) {
+      filteredItems.value = [...categoryOptions.value];
+    } else {
+      filteredItems.value = categoryOptions.value.filter(item => {
+        return item.value.toLowerCase().includes(event.query.toLowerCase());
+      });
+    }
+  }, 250);
+};
+
+const searchItems_related_id = event => {
+  setTimeout(() => {
+    if (!event.query.trim().length) {
+      filteredItems_related_id.value = [...contactsOptions.value];
+    } else {
+      filteredItems_related_id.value = contactsOptions.value.filter(item => {
+        return item.value.toLowerCase().includes(event.query.toLowerCase());
+      });
+    }
+  }, 250);
+};
+
+const onItemSelect = event => {
+  console.log("Selected Item:", event.value);
+  // alert(event.value)
+  // You can perform additional actions here when an item is selected
+};
+
 
 function formatDateBR(date) {
   if (!date) return "";
@@ -345,6 +464,7 @@ const filters = ref({
 const categoryOptions = ref([]);
 const categoryRelationedOptions = ref([]);
 const contactsOptions = ref([]);
+const categoryTree = ref([]);
 
 const columns = ref([
   {
@@ -360,7 +480,10 @@ const columns = ref([
     sortable: true,
     style: { "min-width": "5rem" },
     editTemplate: "Select",
-    options: [{key: 'entrada', value: 'Entrada'}, {key: 'saída', value: 'Saída'}],
+    options: [
+      { key: "entrada", value: "Entrada" },
+      { key: "saída", value: "Saída" }
+    ]
   },
   {
     field: "category_id",
@@ -467,7 +590,7 @@ const visibleColumns = computed(() => {
 
 const fetchDados = async newVal => {
   //fc.name AS category,
-  console.log('newVal', newVal)
+  console.log("newVal", newVal);
   // alert(JSON.stringify(newVal))
   const data = await executeQuery(
     domain,
@@ -489,7 +612,6 @@ const fetchDados = async newVal => {
       ft.description,
       ft.type,
       ft.date,
-      ft.source_category_id,
       fc.id AS category_id,
       cp.full_path AS category,
       u.nome AS user,
@@ -545,7 +667,6 @@ ORDER BY full_path;
   `
   );
 
-
   const cats_relationed = await executeQuery(
     domain,
     `
@@ -585,11 +706,8 @@ ORDER BY full_path;
   `
   );
 
-  categoryOptions.value = [
-    { key: null, value: "---" },
-    ...cats
-  ];
-  
+  categoryOptions.value = [{ key: null, value: "---" }, ...cats];
+
   categoryRelationedOptions.value = [
     { key: null, value: "---" },
     ...cats_relationed
@@ -602,6 +720,12 @@ ORDER BY full_path;
     key: cat.id
   }));
   items.value = data;
+
+
+
+const aa = await executeQuery(domain, `SELECT * FROM financial_categories where type = '${newVal}'`);
+   categoryTree.value = buildCategoryTree(aa);
+  console.log('categoryTree:', categoryTree.value)
 };
 
 onMounted(async () => {
@@ -631,6 +755,7 @@ function formatCurrency(value) {
 }
 
 function openNew() {
+  flg_isEdit.value = false
   item.value = {};
   item.value.type = route.query.op;
   item.value.date = new Date();
@@ -656,11 +781,11 @@ async function saveItem() {
 
   // if (!isValid) return;
 
-  const dataToSave = {
+   const dataToSave = {
     ...item.value,
-    created_by: ret.value.user.id
-    // category_id: item.value.category_id?.key || 0,
-    //related_id: item.value.related_id?.key || 0
+    created_by: ret.value.user.id,
+    category_id: item.value.category_id?.key,
+    related_id: item.value.related_id?.key
   };
 
   delete dataToSave.category;
@@ -670,8 +795,6 @@ async function saveItem() {
 
   console.log("item.value>>>", item.value);
   console.log("dataToSave>>>", dataToSave);
-
-
 
   const isNew = !dataToSave.id;
 
@@ -698,23 +821,33 @@ async function saveItem() {
       detail: isNew ? "Criado" : "Atualizado",
       life: 3000
     });
-    
+
     // itemDialog.value = false;
+    const aux_type = item.value.type
     item.value = {};
     item.value.date = new Date();
-    console.log('>>>>', op);
-    
+    item.value.type = aux_type;
+    console.log(">>>>", op);
+
     // alert()
     // alert(JSON.stringify(op))
-   await fetchDados(op.value);
-
+    if (flg_isEdit.value) {
+      flg_isEdit.value = false
+      itemDialog.value = false;
+    }
+    await fetchDados(aux_type);
   }
 }
 
-function editItem(row) {
-  item.value = { ...row };
-  itemDialog.value = true;
+async function editItem(row) {
+  flg_isEdit.value = true
+  item.value = { ...row }
+  item.value.category_id = categoryOptions.value.find(x=>x.key===row.category_id)
+  item.value.related_id = contactsOptions.value.find(x=>x.key===row.related_id)
+  if (item.value.category_id) itemDialog.value = true;
+
 }
+
 
 function confirmDeleteItem(row) {
   item.value = { ...row };
@@ -783,6 +916,7 @@ watch(
   () => item.value.type,
   newVal => {
     // alert(items.value.type)
+    flag_categorias_select_active.value = true
     fetchDados(newVal);
   }
 );
