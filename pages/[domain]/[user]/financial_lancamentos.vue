@@ -30,6 +30,8 @@
       </Toolbar>
       <DataTable
         ref="dt"
+        scrollable
+        scrollHeight="360px"
         v-model:selection="selectedItems"
         :value="items"
         dataKey="id"
@@ -116,14 +118,14 @@
     <Dialog
       v-model:visible="itemDialog"
       :style="{ width: '650px', padding: '10px 15px 10px 15px' }"
-      header="Edição"
+      :header="'Edição  #' + item.id"
       :modal="true"
     >
      <form @submit.prevent="saveItem"> <!-- Adicione esta linha -->
       <div class="grid grid-cols-3 gap-4  ">
         <div class="mb-3">
           <label for="item.date" class="block font-bold mb-2">
-            Data:
+            Data
           </label>
           <!-- Campo de data -->
           <Calendar
@@ -138,7 +140,7 @@
 
         <div>
           <label for="item.type" class="block font-bold mb-2">
-            Entrada/Saída:
+            Entrada/Saída
           </label>
           <Select
             id="item.type"
@@ -154,13 +156,13 @@
         </div>
          <div>
           <label for="item.doc" class="block font-bold mb-2">
-            Documento:
+            Documento
           </label>
           <InputText id="doc" v-model="item.doc" class="md:w-50"/>
         </div>
         <div class="col-span-3 mb-3">
           <label for="item.category" class="block font-bold mb-2">
-            Categoria:
+            Categoria
           </label>
            <!-- <TreeSelect v-model="item.category_id" filter filterMode="lenient" :options="categoryTree" selectionMode="single" display="chip" :maxSelectedLabels="1" placeholder="Selecione" class="md:w-80 w-full" /> -->
           <AutoComplete
@@ -205,17 +207,22 @@
           <label for="item.amount" class="block font-bold mb-2">
             Forma de pagamento
           </label>
-          <InputText
-            id="item.paymentMethod"
-            v-model="item.paymentMethod"
-            v-bind="config"
-            class="p-inputtext p-component md:w-40"
+          <Select
+            id="item.payment_method"
+            v-model="item.payment_method"
+            :options="payment_method_ops"
+            optionLabel="value"
+            optionValue="key"
+            placeholder="Selecione"
+            checkmark
+            :highlightOnSelect="false"
+            class="md:w-40"
           />
         </div>
 
         <div class="col-span-1">
           <label for="item.type" class="block font-bold mb-2">
-            Contato relacionado:
+            Contato relacionado
           </label>
            <AutoComplete
             id="item.related_id"
@@ -250,8 +257,8 @@
       </div>
       </form>
       <template #footer>
-        <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-        <Button label="Save" icon="pi pi-check" @click="saveItem" />
+        <Button label="Fechar" icon="pi pi-times" text @click="hideDialog" />
+        <Button label="Salvar" icon="pi pi-check" @click="saveItem" />
       </template>
       
     </Dialog>
@@ -340,6 +347,7 @@ const item_type_options = [
   { key: "entrada", value: "Entrada" },
   { key: "saída", value: "Saída" }
 ];
+const payment_method_ops = ref([])
 const flg_isEdit = ref(false)
 const { getUser } = useUser();
 const { data: ret, error } = await getUser();
@@ -498,7 +506,7 @@ const columns = ref([
     field: "doc",
     header: "Documento",
     sortable: true,
-    style: { "min-width": "7rem" },
+    style: { "min-width": "5rem" },
     editTemplate: InputText
   },
   // {
@@ -548,7 +556,17 @@ const columns = ref([
     sortable: true,
     style: { "min-width": "10rem" },
     editTemplate: InputText,
-    hide_editForm: true
+    hide_editForm: true,
+    hidden: true
+  },
+  {
+    field: "payment_method",
+    header: "Pagamento",
+    sortable: true,
+    style: { "min-width": "10rem" },
+    editTemplate: "Select",
+    options: payment_method_ops,
+    hidden: true
   }
 ]);
 
@@ -611,6 +629,8 @@ const fetchDados = async newVal => {
       ft.doc,
       ft.description,
       ft.type,
+      ft.payment_method,
+      ft.obs,
       ft.date,
       fc.id AS category_id,
       cp.full_path AS category,
@@ -719,6 +739,17 @@ ORDER BY full_path;
     value: cat.name,
     key: cat.id
   }));
+
+  const sql_payment_method_ops = await executeQuery(domain, `SELECT * FROM financial_payment_methods`);
+  payment_method_ops.value = sql_payment_method_ops.map(cat => ({
+    value: cat.name,
+    key: cat.id
+  }));
+
+
+
+
+
   items.value = data;
 
 

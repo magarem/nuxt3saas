@@ -506,7 +506,8 @@ async function fetchData() {
   t1.node_type,
   t1.description
 FROM financial_categories t1
-LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id;
+LEFT JOIN financial_categories t2 ON t1.parent_id = t2.id
+ORDER BY t1.name;
   `
   );
 

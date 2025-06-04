@@ -84,6 +84,11 @@ const model = ref([
         icon: "pi pi-fw pi-id-card",
         items: [
           {
+            label: "Métodos de pagamento",
+            icon: "pi pi-fw pi-id-card",
+            to: `/${domain}/${user}/financial_payment_method`
+          },
+          {
             label: "Relatórios",
             icon: "pi pi-fw pi-id-card",
             to: `/${domain}/${user}/reports`
