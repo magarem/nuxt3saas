@@ -1,27 +1,27 @@
 <template>
-  <DataTable :value="report" class="p-datatable-sm" responsiveLayout="scroll">
-    <Column field="data" header="Data">
+  <DataTable :value="report" showGridlines :rowStyle="getRowStyle" class="p-datatable-sm last-row-highlight p-datatable-column-title" responsiveLayout="scroll" >
+    <Column field="data" header="Data" headerStyle="font-size: 18px; background-color: #696969">
   <template #body="{ data }">
     {{ formatDate(data.data) }}
   </template>
 </Column>
-    <Column field="nome" header="Categoria" />
-    <Column field="description" header="Descrição" />
-    <Column field="entradas" header="Entradas">
+    <!-- <Column field="nome" header="Categoria" headerStyle="font-size: 18px;"/> -->
+    <!-- <Column field="description" header="Descrição" headerStyle="font-size: 18px;"/> -->
+    <Column field="entradas" header="Entradas" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.entradas) }}
       </template>
     </Column>
-    <Column field="saidas" header="Saídas">
+    <Column field="saidas" header="Saídas" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.saidas) }}
       </template>
     </Column>
-    <!-- <Column field="saldo" header="Saldo">
+    <Column field="saldo" header="Saldo" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.saldo) }}
       </template>
-    </Column> -->
+    </Column>
   </DataTable>
 </template>
 
@@ -48,9 +48,33 @@ const formatCurrency = (value) => {
   })
 }
 
-const formatDate = (value) => {
-  if (!value) return '-'
-  const date = new Date(value)
-  return isNaN(date.getTime()) ? '-' : date.toLocaleDateString('pt-BR')
+ function getRowStyle(rowData) {
+  console.log(rowData)
+    if (rowData.data == 'Totais') {
+      return { 'background-color': '#2F4F4F', 'font-size': '17px' }; // Light gray
+    } 
+  }
+
+
+
+function formatDate(isoString) {
+  if (isoString=="") return ""
+  if (isoString=="Totais") return "Totais"
+  const date = new Date(isoString);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const year = date.getUTCFullYear();
+  return `${day}-${month}-${year}`;
 }
 </script>
+<style scoped>
+
+.p-datatable-column-title {
+color: red !important;
+font-size: red;
+}
+::v-deep .last-row-highlight .p-datatable-tbody > tr:last-child {
+  background-color: #2196F3 !important;
+  color: red !important;
+}
+</style>

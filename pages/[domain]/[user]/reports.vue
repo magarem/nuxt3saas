@@ -1,6 +1,6 @@
 <template>
   <div class="p-6">
-    <h1 class="text-xl font-bold mb-4">Relatórios Financeiros</h1>
+    <h1 class="font-bold mb-4">Relatórios Financeiros</h1>
     <!-- Filtros -->
     <div class="flex gap-4 mb-4 flex-wrap">
       <Calendar v-model="startDate" placeholder="Data início" showIcon dateFormat="dd/mm/yy" locale="brLocale" />
@@ -8,13 +8,13 @@
       <Dropdown
         v-model="selectedCategory"
         :options="categories"
-        optionLabel="name"
-        optionValue="id"
+        optionLabel="value"
+        optionValue="key"
         placeholder="Filtrar por categoria"
         class="min-w-[200px]"
       />
       <Button label="Atualizar" icon="pi pi-refresh" @click="fetchReport" />
-      <Button label="Exportar PDF" icon="pi pi-file-pdf" class="p-button-outlined" @click="exportToPDF" />
+      <!-- <Button label="Exportar PDF" icon="pi pi-file-pdf" class="p-button-outlined" @click="exportToPDF" /> -->
     </div>
 
     <!-- Tabela -->
@@ -24,7 +24,7 @@
     <!-- Alternador de tipo -->
     <div class="mt-6">
       <label class="font-semibold mr-2">Exibir por:</label>
-      <select v-model="type" class="border px-2 py-1 rounded">
+      <select v-model="type" class="border px-2 py-1 rounded bg-gray-800">
         <option value="categoria">Categoria</option>
         <option value="data">Data</option>
       </select>
@@ -51,6 +51,7 @@ import ReportByCategory from '@/components/ReportByCategory.vue'
 import ReportByDate from '@/components/ReportByDate.vue'
 
 const reportData = ref([])
+const totais = ref([])
 const startDate = ref(null)
 const endDate = ref(null)
 const type = ref('categoria')
@@ -107,7 +108,7 @@ const brLocale = {
 
 const fetchCategories = async () => {
   const res = await $fetch(`/api/${domain}/categories`)
-  categories.value = res
+  categories.value = [{key: '', value: 'Limpar filtro'}, ...res]
 }
 
 const fetchReport = async () => {
@@ -118,7 +119,8 @@ const fetchReport = async () => {
     category_id: selectedCategory.value
   }
   const res = await $fetch(`/api/${domain}/reports`, { params })
-  reportData.value = res
+  reportData.value = [...res.rows, {data: "Totais", description: "Totais", entradas: res.rows_totais[0].total_entradas, saidas: res.rows_totais[0].total_saídas, saldo: res.rows_totais[0].saldo}]
+  totais.value = res.rows_totais
 }
 
 const exportToPDF = () => {

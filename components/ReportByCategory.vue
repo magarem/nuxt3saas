@@ -1,22 +1,22 @@
 <template>
-  <DataTable :value="report" class="p-datatable-sm" responsiveLayout="scroll">
-    <Column field="nome" header="Categoria" />
-     <Column field="description" header="Descrição" />
-    <Column field="entradas" header="Entradas">
+  <DataTable :value="report" class="p-datatable-sm" :rowStyle="getRowStyle" showGridlines responsiveLayout="scroll">
+    <Column field="nome" header="Categoria" headerStyle="font-size: 18px; background-color: #696969"/>
+     <Column field="description" header="Descrição" headerStyle="font-size: 18px; background-color: #696969"/>
+    <Column field="entradas" header="Entradas" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.entradas) }}
       </template>
     </Column>
-    <Column field="saidas" header="Saídas">
+    <Column field="saidas" header="Saídas" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.saidas) }}
       </template>
     </Column>
-    <!-- <Column field="saldo" header="Saldo">
+    <Column field="saldo" header="Saldo" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.saldo) }}
       </template>
-    </Column> -->
+    </Column>
   </DataTable>
 </template>
 
@@ -30,6 +30,13 @@ defineProps({
     required: true
   }
 })
+
+ function getRowStyle(rowData) {
+  console.log(rowData)
+    if (rowData.data == 'Totais') {
+      return { 'background-color': '#2F4F4F', 'font-size': '17px' }; // Light gray
+    } 
+  }
 
 const formatCurrency = (value) => {
   if (value === null || value === undefined || isNaN(value)) {

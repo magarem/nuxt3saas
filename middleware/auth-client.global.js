@@ -4,13 +4,19 @@ const {getUser} = useUser();
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
 
-	const { domain, user: userFromUrl, page } = useNuxtApp().$urlContext
+	const { domain, user: userFromUrl } = useNuxtApp().$urlContext
 	console.log("domain----------------:", domain);
 	console.log("userFromUrl----------------:", userFromUrl);
 
 	console.log("Auth check middleware triggered");
 	console.log("To route:", to);
 	console.log("From route:", from);
+
+
+
+	
+	const parts = to.fullPath.split('/');
+	const page = parts[parts.length - 1];
 
 	console.log("page:", page);
 
@@ -52,7 +58,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
 	const allowedPaths = [
 		"/dashboard",
-		"login",
+		"/login",
 		"/forbidden",
 		"/password",
 		"/profile",
@@ -66,7 +72,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		"/domain-not-exists",
 		"/websocket-test"
 	];
-
+	console.log("to.path:", to.path);
+	console.log("page:", page);
 	if (allowedPaths.some(path => to.path.includes(path))) {
 		console.log("acesso a páginas base:", to);
 		return;

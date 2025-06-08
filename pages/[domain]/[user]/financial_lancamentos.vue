@@ -41,6 +41,7 @@
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         :rowsPerPageOptions="[5, 10, 25]"
         currentPageReportTemplate="{first} até {last} de {totalRecords} itenxs"
+        
       >
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
@@ -118,14 +119,14 @@
     <Dialog
       v-model:visible="itemDialog"
       :style="{ width: '650px', padding: '10px 15px 10px 15px' }"
-      :header="'Edição  #' + item.id"
+      :header="'Edição'"
       :modal="true"
     >
      <form @submit.prevent="saveItem"> <!-- Adicione esta linha -->
       <div class="grid grid-cols-3 gap-4  ">
         <div class="mb-3">
           <label for="item.date" class="block font-bold mb-2">
-            Data
+            Data 
           </label>
           <!-- Campo de data -->
           <Calendar
@@ -135,6 +136,8 @@
             :locale="brLocale"
             showIcon
             class="md:w-40"
+            :utc="true"
+            
           />
         </div>
 
@@ -258,7 +261,7 @@
       </form>
       <template #footer>
         <Button label="Fechar" icon="pi pi-times" text @click="hideDialog" />
-        <Button label="Salvar" icon="pi pi-check" @click="saveItem" />
+        <Button label="Salvar" icon="pi pi-check" @click="saveItem" :disabled="editSaveButtonPressed"/>
       </template>
       
     </Dialog>
@@ -327,6 +330,8 @@ import Dropdown from "primevue/dropdown";
 import Select from "primevue/select";
 import CustomSelect from "~/components/CustomSelect.vue";
 import { ca } from "date-fns/locale";
+import { parseISO,format, parse  } from 'date-fns';
+
 const toast = useToast();
 const route = useRoute();
 const domain = route.params.domain;
@@ -339,6 +344,7 @@ const deleteItemDialog = ref(false);
 const deleteItemsDialog = ref(false);
 const selectedItems = ref([]);
 const submitted = ref(false);
+const editSaveButtonPressed = ref(false);
 const filteredItems_related_id  = ref([])
 const amount = ref(null);
 const flag_categorias_select_active = ref(false)
@@ -398,9 +404,17 @@ const onItemSelect = event => {
 };
 
 
-function formatDateBR(date) {
-  if (!date) return "";
-  return new Date(date).toLocaleDateString("pt-BR");
+// function formatDateBR(date) {
+//   if (!date) return "";
+//   return new Date(date).toLocaleDateString("pt-BR");
+// }
+
+function formatDateBR(isoString) {
+  const date = new Date(isoString);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const year = date.getUTCFullYear();
+  return `${day}-${month}-${year}`;
 }
 
 const config = {
@@ -479,7 +493,7 @@ const columns = ref([
     field: "date",
     header: "Data",
     sortable: true,
-    style: { "min-width": "5rem" },
+    style: { "min-width": "10rem" },
     editTemplate: "calendar"
   },
   {
@@ -753,7 +767,6 @@ ORDER BY full_path;
   items.value = data;
 
 
-
 const aa = await executeQuery(domain, `SELECT * FROM financial_categories where type = '${newVal}'`);
    categoryTree.value = buildCategoryTree(aa);
   console.log('categoryTree:', categoryTree.value)
@@ -801,7 +814,7 @@ function hideDialog() {
 
 async function saveItem() {
   submitted.value = true;
-
+  editSaveButtonPressed.value = true
   let isValid = true;
   // for (const col of columns.value) {
   //   if (col.editTemplate && !item.value[col.field]) {
@@ -811,9 +824,12 @@ async function saveItem() {
   // }
 
   // if (!isValid) return;
+console.log('item.value', item.value);
 
    const dataToSave = {
     ...item.value,
+    date: item.value.date ? format(item.value.date, 'yyyy-MM-dd') : null,
+    
     created_by: ret.value.user.id,
     category_id: item.value.category_id?.key,
     related_id: item.value.related_id?.key
@@ -846,6 +862,7 @@ async function saveItem() {
       life: 3000
     });
   } else {
+    editSaveButtonPressed.value = false
     toast.add({
       severity: "success",
       summary: "Sucesso",
@@ -875,6 +892,8 @@ async function editItem(row) {
   item.value = { ...row }
   item.value.category_id = categoryOptions.value.find(x=>x.key===row.category_id)
   item.value.related_id = contactsOptions.value.find(x=>x.key===row.related_id)
+  item.value.date = parseISO(`${item.value.date.split('T')[0]}T00:00:00`);
+
   if (item.value.category_id) itemDialog.value = true;
 
 }
@@ -952,3 +971,9 @@ watch(
   }
 );
 </script>
+<style scoped>
+::v-deep .last-row-highlight .p-datatable-tbody > tr:last-child {
+  background-color: #2196F3 !important;
+  color: white !important;
+}
+</style>

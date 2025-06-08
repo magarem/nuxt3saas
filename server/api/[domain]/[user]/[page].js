@@ -49,11 +49,13 @@ export default defineEventHandler(async (event) => {
 			return {success: false, statusCode: 222, statusMessage: `Acesso negado`};
 		}
 
+		console.log('page:', page);
+		
 		// Corrigido: Buscar todos os role_ids
 		const pageRoles = db.prepare('SELECT role_id FROM page_roles WHERE page_id = (SELECT id FROM pages WHERE page = ?)').all(page);
 		console.log('Page roles:', pageRoles);
 
-		if (! pageRoles || pageRoles.length === 0) {
+		if (!pageRoles || pageRoles.length === 0) {
 			return sendError(event, createError({statusCode: 404, statusMessage: `Página não encontrada ou sem roles configuradas`}));
 		}
 
