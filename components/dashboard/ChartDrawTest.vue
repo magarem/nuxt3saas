@@ -7,27 +7,50 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Bar } from 'vue-chartjs'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
+import { 
+  Chart as ChartJS, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  BarElement, 
+  CategoryScale, 
+  LinearScale 
+} from 'chart.js'
 
-// Registrar os componentes do Chart.js
+// Register ChartJS components
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-// Dados e opções do gráfico
-const chartData = ref({
-  labels: ['Janeiro', 'Fevereiro', 'MArço', 'Abril'],
-  datasets: [
-    {
-      label: 'Entradas',
-      data: [40, 20, 12, 70],
-      backgroundColor: '#9BD0F5'
-
-    }
-  ]
+// Define props
+const props = defineProps({
+  chartData: {
+    type: Object,
+    required: true,
+    default: () => ({
+      labels: [],
+      datasets: []
+    })
+  },
+  chartOptions: {
+    type: Object,
+    default: () => ({
+      responsive: true,
+      maintainAspectRatio: false
+    })
+  }
 })
 
-const chartOptions = ref({
-  responsive: true
-})
+// Create reactive references
+const chartData = ref(props.chartData)
+const chartOptions = ref(props.chartOptions)
+
+// Watch for prop changes
+watch(() => props.chartData, (newVal) => {
+  chartData.value = newVal
+}, { deep: true })
+
+watch(() => props.chartOptions, (newVal) => {
+  chartOptions.value = { ...newVal }
+}, { deep: true })
 </script>

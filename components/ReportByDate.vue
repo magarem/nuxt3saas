@@ -1,23 +1,23 @@
 <template>
   <DataTable :value="report" showGridlines :rowStyle="getRowStyle" class="p-datatable-sm last-row-highlight p-datatable-column-title" responsiveLayout="scroll" >
-    <Column field="data" header="Data" headerStyle="font-size: 18px; background-color: #696969">
+    <Column sortable field="data" header="Data" headerStyle="font-size: 18px; background-color: #696969">
   <template #body="{ data }">
     {{ formatDate(data.data) }}
   </template>
 </Column>
     <!-- <Column field="nome" header="Categoria" headerStyle="font-size: 18px;"/> -->
     <!-- <Column field="description" header="Descrição" headerStyle="font-size: 18px;"/> -->
-    <Column field="entradas" header="Entradas" headerStyle="font-size: 18px; background-color: #696969">
+    <Column sortable field="entradas" header="Entradas" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.entradas) }}
       </template>
     </Column>
-    <Column field="saidas" header="Saídas" headerStyle="font-size: 18px; background-color: #696969">
+    <Column sortable field="saidas" header="Saídas" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.saidas) }}
       </template>
     </Column>
-    <Column field="saldo" header="Saldo" headerStyle="font-size: 18px; background-color: #696969">
+    <Column sortable field="saldo" header="Saldo" headerStyle="font-size: 18px; background-color: #696969">
       <template #body="{ data }">
         {{ formatCurrency(data.saldo) }}
       </template>
@@ -50,9 +50,9 @@ const formatCurrency = (value) => {
 
  function getRowStyle(rowData) {
   console.log(rowData)
-    if (rowData.data == 'Totais') {
-      return { 'background-color': '#2F4F4F', 'font-size': '17px' }; // Light gray
-    } 
+    // if (rowData.data == 'Totais') {
+    //   return { 'background-color': '#2F4F4F', 'font-size': '17px' }; // Light gray
+    // } 
   }
 
 

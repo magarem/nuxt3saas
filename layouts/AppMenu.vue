@@ -3,22 +3,7 @@ import { ref } from "vue";
 
 import AppMenuItem from "./AppMenuItem.vue";
 
-function getDomainFromHref(href) {
-  const match = href.split("/")[1];
-  if (match) {
-    return match;
-  }
-  return null;
-}
-
-function getUserFromHref(href) {
-  const match = href.split("/")[2];
-  if (match) {
-    return match;
-  }
-  return null;
-}
-
+const { data: ret } = await useFetch("/api/user")
 
 const route = useRoute();
 

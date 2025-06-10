@@ -67,10 +67,11 @@
           :exportable="false"
         ></Column>
 
-        <Column field="name" header="Nome" expander style="width: 25%"></Column>
-        <Column field="type" header="Entrada/Saída" style="width: 20%"></Column>
-        <Column field="node_type" header="Tipo" style="width: 15%"></Column>
+        <Column sortable field="name" header="Nome" expander style="width: 25%"></Column>
+        <Column sortable field="type" header="Entrada/Saída" style="width: 20%"></Column>
+        <Column sortable field="node_type" header="Tipo" style="width: 15%"></Column>
         <Column
+          sortable
           field="description"
           header="Discrição"
           style="width: 50%"

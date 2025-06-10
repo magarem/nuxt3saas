@@ -31,10 +31,7 @@ SELECT
   id AS key, 
   full_path AS value
 FROM category_tree
-WHERE 
-(node_type is null or 
-  node_type != 'grupo')
-  AND type = 'entrada' 
+
   
 ORDER BY full_path;`).all()
 })
