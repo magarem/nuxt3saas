@@ -828,6 +828,7 @@ console.log('item.value', item.value);
 
    const dataToSave = {
     ...item.value,
+    amount: item.value.type=='saída' && -Math.abs(Number(item.value.amount)),
     date: item.value.date ? format(item.value.date, 'yyyy-MM-dd') : null,
     
     created_by: ret.value.user.id,

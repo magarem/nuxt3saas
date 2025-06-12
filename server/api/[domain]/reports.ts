@@ -13,7 +13,7 @@ function toISODate(dateStr: string): string {
 
 async function getCategoryById(db, id) {
 	const stmt = db.prepare('SELECT node_type FROM financial_categories WHERE id = ?');
-	return stmt.get(id).node_type||"";
+	return stmt.get(id).node_type || "";
 }
 
 export default defineEventHandler(async (event) => {
@@ -27,11 +27,11 @@ export default defineEventHandler(async (event) => {
 	let sql_group = "";
 	const params: any[] = [];
 	let where = "1=1";
- let node_type = ""
-  if (category_id){
-    node_type = await getCategoryById(db, category_id)
-  }
-  
+	let node_type = ""
+
+	if (category_id) {
+		node_type = await getCategoryById(db, category_id)
+	}
 
 	if (start) {
 		where += " AND date >= ?";
@@ -45,15 +45,13 @@ export default defineEventHandler(async (event) => {
 
 
 	if (category_id) {
-   
-        if (node_type=='grupo'){
-                where += " AND parent.id = ?";
-            }else{
-              where += " AND category_id = ?";
-              
-            }
-   
-		params.push(category_id);
+
+		if (node_type == 'grupo') {
+			where += " AND parent.id = ?";
+		} else {
+			where += " AND category_id = ?";
+
+		} params.push(category_id);
 	}
 
 	// Buscar categorias e montar mapa para paths recursivos
@@ -74,9 +72,9 @@ export default defineEventHandler(async (event) => {
 	console.log('params:', params);
 
 
-  //Totais calculation
-  if (node_type=='grupo'){
-    sql = `
+	// Totais calculation
+	if (node_type == 'grupo') {
+		sql = `
   SELECT 
     parent.id AS group_id,
     parent.name AS group_name,
@@ -91,8 +89,8 @@ WHERE ${where}
 GROUP BY parent.id, parent.name
 ORDER BY parent.name
   `
-  }else{
-  sql = `
+	} else {
+		sql = `
     SELECT
     SUM(CASE WHEN type = 'entrada' THEN amount ELSE 0 END) as total_entradas,
     SUM(CASE WHEN type = 'saída' THEN amount ELSE 0 END) AS total_saídas, 
@@ -100,9 +98,9 @@ ORDER BY parent.name
     FROM financial_transactions
     WHERE ${where};
   `
-}
+	}
 
-console.log('sql:', sql);
+	console.log('sql:', sql);
 
 	const rows_totais = db.prepare(sql).all(... params);
 
@@ -131,9 +129,9 @@ console.log('sql:', sql);
     SUM(CASE WHEN type = 'entrada' THEN amount ELSE 0 END) + SUM(CASE WHEN type = 'saída' THEN amount ELSE 0 END) AS saldo
     FROM financial_transactions`
 
-    console.log('getCategoryById(db, category_id):', getCategoryById(db, category_id));
+	console.log('getCategoryById(db, category_id):', getCategoryById(db, category_id));
 
-	if (node_type=="item") {
+	if (node_type == "item") {
 		sql = `
     SELECT 
       c.id as category_id,
@@ -150,10 +148,9 @@ console.log('sql:', sql);
     ORDER BY saldo DESC
   `;
 
-  console.log('sql:', sql);
+		console.log('sql:', sql);
 	} else {
 
-    
 
 		sql = `
   SELECT 
@@ -177,8 +174,8 @@ ORDER BY parent.name, saldo DESC
 
 	}
 
-  console.log('sql2:', sql);
-  
+	console.log('sql2:', sql);
+
 	const rows = db.prepare(sql).all(... params);
 
 	// Substitui nome pela hierarquia completa

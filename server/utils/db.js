@@ -25,3 +25,22 @@ export function getDatabase(domain) {
     return null; // Or throw an error, depending on your error handling strategy
   }
 }
+
+export async function runSql(domain, sql) {
+  // Added domain
+  try {
+    const response = await fetch(`/api/${domain}/query`, {
+      // Changed URL
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ sql })
+    });
+    // Handle errors like before
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    // Handle error
+  }
+}

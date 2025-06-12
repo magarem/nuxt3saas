@@ -1,8 +1,9 @@
 <template>
+  {{ report }}
   <DataTable :value="report" showGridlines :rowStyle="getRowStyle" class="p-datatable-sm last-row-highlight p-datatable-column-title" responsiveLayout="scroll" >
     <Column sortable field="data" header="Data" headerStyle="font-size: 18px; background-color: #696969">
   <template #body="{ data }">
-    {{ formatDate(data.data) }}
+    {{ data.data}}
   </template>
 </Column>
     <!-- <Column field="nome" header="Categoria" headerStyle="font-size: 18px;"/> -->
