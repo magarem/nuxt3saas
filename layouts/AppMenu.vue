@@ -18,6 +18,15 @@ console.log("domain>>>>:", domain);
 console.log("route.fullPath>>>>:", route.fullPath);
 console.log("location.href:", location?.href);
 
+
+const { data: tokenUser, error } = await useFetch('/api/showuser');
+
+console.log("tokenUser>>>>:", tokenUser.value);
+if (error.value) {
+  console.error('Erro ao buscar usuário:', error.value);
+}
+
+
 const model = ref([
   {
     label: '',
@@ -109,6 +118,50 @@ const model = ref([
     ]
   }
 ]);
+
+
+function filterMenuByAllowedPages(menu, allowedPages, domain, user) {
+    const filteredMenu = [];
+
+    for (const menuItem of menu) {
+        // If it has sub-items, process them
+        if (menuItem.items && Array.isArray(menuItem.items)) {
+            const filteredItems = menuItem.items
+                .map(item => {
+                    if (item.items && Array.isArray(item.items)) {
+                        // Recursively filter submenus
+                        const subItems = filterMenuByAllowedPages([item], allowedPages, domain, user);
+                        return subItems.length > 0 ? subItems[0] : null; // Keep only if submenu has allowed items
+                    } else {
+                        // Extract the page name from the path
+                        const parts = item.to.split('/');
+                        const pageName = parts[3]; // Assuming /{domain}/{user}/{page}
+
+                        // Keep the item only if the user has access to this page
+                        return allowedPages.includes(pageName) ? item : null;
+                    }
+                })
+                .filter(item => item !== null); // Remove null (disallowed) items
+
+            // Only keep this group if it has at least one allowed item
+            if (filteredItems.length > 0) {
+                filteredMenu.push({
+                    ...menuItem,
+                    items: filteredItems
+                });
+            }
+        }
+    }
+
+    return filteredMenu;
+}
+
+console.log("model.value before filtering:", model.value);
+console.log("tokenUser.value.user.allowedPages:", tokenUser.value?.user?.allowedPages);
+console.log("domain:", tokenUser.value.user.domain);
+// console.log("user:", user);
+model.value = filterMenuByAllowedPages(model.value, tokenUser.value.user.allowedPages, tokenUser.value.user.domain, tokenUser.value.user.username);
+
 
 watch(() => router.currentRoute.value.path, (newPath) => {
   currentPath.value = newPath;

@@ -4,21 +4,29 @@
       <template #title>Resumo Financeiro do período</template>
 
       <template #content>
-        <div class="space-y-4">
+        <div class="space-y-4 mt-3">
           <div class="flex justify-between">
-            <span class="font-semibold text-gray-600">Entradas:</span>
-            <span class="text-green-600 font-bold">R$ {{ formatNumber(finance.entradas) }}</span>
+            <span class="font-semibold text-gray-300">Entradas:</span>
+            <span class="text-green-300 font-bold">R$ {{ formatNumber(finance.entradas) }}</span>
           </div>
 
           <div class="flex justify-between">
-            <span class="font-semibold text-gray-600">Saídas:</span>
-            <span class="text-red-600 font-bold">R$ {{ formatNumber(finance.saidas) }}</span>
+            <span class="font-semibold text-gray-300">Saídas:</span>
+            <span class="text-red-500 font-bold">R$ {{ formatNumber(finance.saidas) }}</span>
           </div>
 
           <div class="flex justify-between border-t pt-4 mt-4">
-            <span class="font-semibold text-gray-800">Saldo:</span>
-            <span class="text-blue-600 text-lg font-bold">R$ {{ formatNumber(finance.saldo) }}</span>
-          </div>
+  <span class="font-semibold text-gray-300">Saldo:</span>
+  <span 
+    :class="[
+      'text-lg font-bold',
+      finance.saldo >= 0 ? 'text-green-500' : 'text-red-500'
+    ]"
+  >
+    R$ {{ formatNumber(finance.saldo) }}
+  </span>
+</div>
+
         </div>
       </template>
     </Card>

@@ -4,7 +4,7 @@ import { getDatabase } from '~/server/utils/db';
 
 const SECRET_KEY = "chave_secreta";
 
-function verificarLoginPorNome(db, nomeDigitado, senhaDigitada) {
+async function verificarLoginPorNome(db, nomeDigitado, senhaDigitada) {
 	try {
 		const stmt = db.prepare(`
       SELECT
@@ -42,8 +42,13 @@ export default defineEventHandler(async (event : H3Event) => {
 	const body = await readBody(event);
 
 	const domain = event.context.params.domain;
+
+	if (!domain) {
+        throw createError({ statusCode: 400, statusMessage: 'Domínio inválido' });
+    }
+	
 	const db = getDatabase(domain);
-	const findUser = verificarLoginPorNome(db, body.username, body.password);
+	const findUser = await verificarLoginPorNome(db, body.username, body.password);
 
 	if (! findUser.sucesso) {
 		throw createError({statusCode: 401, statusMessage: "Credenciais inválidas"});
@@ -70,5 +75,5 @@ export default defineEventHandler(async (event : H3Event) => {
 
 	delete userDataToStore.password;
 
-	return {success: true, message: "Login realizado com sucesso", token};
+	return {success: true, message: "Login realizado com sucesso", token, user: userDataToStore};
 });
