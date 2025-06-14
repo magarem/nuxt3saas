@@ -1,41 +1,72 @@
 <template>
   <span class="text-[28px] mr-3">Relatórios</span>
   <div class="my-4">
-    
-   <Calendar
-        v-model="startDate"
-        placeholder="Data início"
-        showIcon
-        dateFormat="dd/mm/yy"
-        locale="brLocale"
-        class="mr-3"
-      />
-      <Calendar
-        v-model="endDate"
-        placeholder="Data fim"
-        showIcon
-        dateFormat="dd/mm/yy"
-        locale="brLocale"
-        class="mr-3"
-      />
-  <Button label="Carregar Transações" @click="load_transactions" class="p-button-raised p-button-success" />
- </div>
-  <FinancialTransactionDatatable :transactions="transactions" @view="row_view"/>
-
-<!-- <pre>
+    {{ selectedCategory }}
+    <Calendar
+      v-model="startDate"
+      placeholder="Data início"
+      showIcon
+      dateFormat="dd/mm/yy"
+      locale="brLocale"
+      class="mr-3"
+    />
+    <Calendar
+      v-model="endDate"
+      placeholder="Data fim"
+      showIcon
+      dateFormat="dd/mm/yy"
+      locale="brLocale"
+      class="mr-3"
+    />
+    <Dropdown
+      v-model="selectedCategory"
+      :options="categories"
+      optionLabel="value"
+      optionValue="key"
+      placeholder="Filtrar por categoria"
+      class="min-w-[200px] mr-3"
+    />
+    <Button
+      label="Carregar Transações"
+      @click="load"
+      class="p-button-raised p-button-success"
+    />
+  </div>
+  <FinancialTransactionDatatable
+    :transactions="transactions"
+    @view="row_view"
+  />
+   <div class="mt-5" _class="flex justify-center items-center min-h-screen bg-gray-50">
+    <FinanceCard :finance="totals[0]" />
+  </div>
+  <!-- <pre>
   {{ transactions }}
 </pre> -->
-
 </template>
 
 <script setup lang="ts">
 import FinancialTransactionDatatable from "@/components/FinancialTransactionDatatable.vue";
+import FinanceCard from '@/components/FinanceCard.vue'
+import {
+  executeQuery,
+  executeQueryRun,
+  formatCurrency,
+  formatDateForSQL
+} from "@/utils/db";
 
 const route = useRoute();
 const domain = route.params.domain;
-const transactions = ref([])
-const startDate = ref(null)
-const endDate = ref(null)
+const categories = ref([]);
+const selectedCategory = ref();
+const transactions = ref([]);
+const totals = ref([]);
+const startDate = ref(null);
+const endDate = ref(null);
+
+function load() {
+  load_transactions(); 
+  load_totais()
+}
 
 function row_view(row) {
   console.log("Row view clicked:", row);
@@ -43,33 +74,10 @@ function row_view(row) {
   // Implement the logic to view the transaction details
 }
 
-function formatDateForSQL(date) {
-  if (!date) return null; // Handle null or undefined dates
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months start at 0
-  const dd = String(date.getDate()).padStart(2, '0');
-  
-  // Optional: add time if needed
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-async function executeQuery(domain, sql) {
-  try {
-    const response = await fetch(`/api/${domain}/query`, {
-      // Changed URL
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ sql })
-    });
-    // Handle errors like before
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    // Handle error
-  }
-}
+const fetchCategories = async () => {
+  const res = await $fetch(`/api/${domain}/categories`);
+  categories.value = [{ key: "", value: "Limpar filtro" }, ...res];
+};
 
 const load_transactions = async () => {
   const params = {
@@ -78,9 +86,8 @@ const load_transactions = async () => {
   };
 
   console.log("Loading transactions with params:", params);
-  
 
-  const sql = `
+  let sql = `
    WITH RECURSIVE category_path AS (
   SELECT id, parent_id, name, type, name AS full_path
   FROM financial_categories
@@ -122,13 +129,50 @@ WHERE ft.date BETWEEN
   CASE WHEN ${params.start_date} IS NULL THEN '1970-01-01' ELSE '${params.start_date}' END
   AND 
   CASE WHEN ${params.end_date} IS NULL THEN '2100-01-01' ELSE '${params.end_date}' END
-ORDER BY ft.date DESC;`;
+`;
+
+ if (selectedCategory.value) {
+    sql += ` AND ft.category_id = ${selectedCategory.value}`;
+  }
+
+  sql += ` ORDER BY ft.date DESC;`;
+
   console.log("SQL Query:", sql);
   const res = await executeQuery(domain, sql);
-  transactions.value = res
+  transactions.value = res;
 };
 
-load_transactions()
+const load_totais = async () => {
+  const params = {
+    start_date: formatDateForSQL(startDate.value),
+    end_date: formatDateForSQL(endDate.value)
+  };
 
+  console.log("totals Loading transactions with params:", params);
+
+  let sql = `
+  SELECT 
+      SUM(CASE WHEN type = 'entrada' THEN amount ELSE 0 END) AS entradas,
+      SUM(CASE WHEN type = 'saída' THEN amount ELSE 0 END) AS saidas,
+      SUM(amount) AS saldo
+FROM financial_transactions
+WHERE date BETWEEN 
+  CASE WHEN ${params.start_date} IS NULL THEN '1970-01-01' ELSE '${params.start_date}' END
+  AND 
+  CASE WHEN ${params.end_date} IS NULL THEN '2100-01-01' ELSE '${params.end_date}' END
+`;
+  if (selectedCategory.value) {
+    sql += ` AND category_id = ${selectedCategory.value}`;
+  }
+
+  sql += ` ORDER BY date DESC;`;
+  console.log("totais - SQL Query:", sql);
+  const res = await executeQuery(domain, sql);
+  totals.value = res;
+};
+
+fetchCategories();
+load_transactions();
+load_totais();
 // transactions.value = await load_transactions();
 </script>

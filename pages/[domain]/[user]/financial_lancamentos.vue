@@ -11,7 +11,7 @@
             @click="openNew"
           />
           <Button
-            label="Delete"
+            label="Excluir"
             icon="pi pi-trash"
             severity="secondary"
             @click="confirmDeleteSelected"
@@ -21,7 +21,7 @@
 
         <template #end>
           <Button
-            label="Export"
+            label="Exportar"
             icon="pi pi-upload"
             severity="secondary"
             @click="exportCSV($event)"
@@ -41,7 +41,6 @@
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         :rowsPerPageOptions="[5, 10, 25]"
         currentPageReportTemplate="{first} até {last} de {totalRecords} itenxs"
-        
       >
         <template #header>
           <div class="flex flex-wrap gap-2 items-center justify-between">
@@ -122,148 +121,145 @@
       :header="'Edição'"
       :modal="true"
     >
-     <form @submit.prevent="saveItem"> <!-- Adicione esta linha -->
-      <div class="grid grid-cols-3 gap-4  ">
-        <div class="mb-3">
-          <label for="item.date" class="block font-bold mb-2">
-            Data 
-          </label>
-          <!-- Campo de data -->
-          <Calendar
-            id="item.date"
-            v-model="item.date"
-            dateFormat="dd/mm/yy"
-            :locale="brLocale"
-            showIcon
-            class="md:w-40"
-            :utc="true"
-            
-          />
-        </div>
+      <form @submit.prevent="saveItem">
+        <!-- Adicione esta linha -->
+        <div class="grid grid-cols-3 gap-4  ">
+          <div class="mb-3">
+            <label for="item.date" class="block font-bold mb-2">
+              Data
+            </label>
+            <!-- Campo de data -->
+            <Calendar
+              id="item.date"
+              v-model="item.date"
+              dateFormat="dd/mm/yy"
+              :locale="brLocale"
+              showIcon
+              class="md:w-40"
+              :utc="true"
+            />
+          </div>
 
-        <div>
-          <label for="item.type" class="block font-bold mb-2">
-            Entrada/Saída
-          </label>
-          <Select
-            id="item.type"
-            v-model="item.type"
-            :options="item_type_options"
-            optionLabel="value"
-            optionValue="key"
-            placeholder="Selecione"
-            checkmark
-            :highlightOnSelect="false"
-            class="md:w-40"
-          />
-        </div>
-         <div>
-          <label for="item.doc" class="block font-bold mb-2">
-            Documento
-          </label>
-          <InputText id="doc" v-model="item.doc" class="md:w-50"/>
-        </div>
-        <div class="col-span-3 mb-3">
-          <label for="item.category" class="block font-bold mb-2">
-            Categoria
-          </label>
-           <!-- <TreeSelect v-model="item.category_id" filter filterMode="lenient" :options="categoryTree" selectionMode="single" display="chip" :maxSelectedLabels="1" placeholder="Selecione" class="md:w-80 w-full" /> -->
-          <AutoComplete
-            id="item.category_id"
-            :disabled="!flag_categorias_select_active"
-            v-model="item.category_id"
-            :suggestions="filteredItems"
-            @complete="searchItems($event)"
-            placeholder="Buscar um item"
-            dropdown
-            field="value"
-            forceSelection
-            :dropdownMode="'current'"
-            optionLabel="value"
-           class="w-full"
-            :inputClass="'w-full'"
-          ></AutoComplete>
-        </div>
-        <div class="col-span-3 mb-3">
-          <label :for="item.description" class="block font-bold mb-2">
-            Descrição
-          </label>
-          <Textarea
-            :id="item.description"
-            v-model="item.description"
-            rows="2"
-            cols="67"
-          />
-        </div>
-        <div class="mb-3">
-          <label for="item.amount" class="block font-bold mb-2">
-            Valor
-          </label>
-          <money3
-            id="item.amount"
-            v-model="item.amount"
-            v-bind="config"
-            class="p-inputtext p-component md:w-40"
-          />
-        </div>
-        <div class="mb-3">
-          <label for="item.amount" class="block font-bold mb-2">
-            Forma de pagamento
-          </label>
-          <Select
-            id="item.payment_method"
-            v-model="item.payment_method"
-            :options="payment_method_ops"
-            optionLabel="value"
-            optionValue="key"
-            placeholder="Selecione"
-            checkmark
-            :highlightOnSelect="false"
-            class="md:w-40"
-          />
-        </div>
+          <div>
+            <label for="item.type" class="block font-bold mb-2">
+              Entrada/Saída
+            </label>
+            <Select
+              id="item.type"
+              v-model="item.type"
+              :options="item_type_options"
+              optionLabel="value"
+              optionValue="key"
+              placeholder="Selecione"
+              checkmark
+              :highlightOnSelect="false"
+              class="md:w-40"
+            />
+          </div>
+          <div>
+            <label for="item.doc" class="block font-bold mb-2">
+              Documento
+            </label>
+            <InputText id="doc" v-model="item.doc" class="md:w-50" />
+          </div>
+          <div class="col-span-3 mb-3">
+            <label for="item.category" class="block font-bold mb-2">
+              Categoria
+            </label>
+            <!-- <TreeSelect v-model="item.category_id" filter filterMode="lenient" :options="categoryTree" selectionMode="single" display="chip" :maxSelectedLabels="1" placeholder="Selecione" class="md:w-80 w-full" /> -->
+            <AutoComplete
+              id="item.category_id"
+              :disabled="!flag_categorias_select_active"
+              v-model="item.category_id"
+              :suggestions="filteredItems"
+              @complete="searchItems($event)"
+              placeholder="Buscar um item"
+              dropdown
+              field="value"
+              forceSelection
+              :dropdownMode="'current'"
+              optionLabel="value"
+              class="w-full"
+              :inputClass="'w-full'"
+            ></AutoComplete>
+          </div>
+          <div class="col-span-3 mb-3">
+            <label :for="item.description" class="block font-bold mb-2">
+              Descrição
+            </label>
+            <Textarea
+              :id="item.description"
+              v-model="item.description"
+              rows="2"
+              cols="67"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="item.amount" class="block font-bold mb-2">
+              Valor
+            </label>
+            <money3
+              id="item.amount"
+              v-model="item.amount"
+              v-bind="config"
+              class="p-inputtext p-component md:w-40"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="item.amount" class="block font-bold mb-2">
+              Forma de pagamento
+            </label>
+            <Select
+              id="item.payment_method"
+              v-model="item.payment_method"
+              :options="payment_method_ops"
+              optionLabel="value"
+              optionValue="key"
+              placeholder="Selecione"
+              checkmark
+              :highlightOnSelect="false"
+              class="md:w-40"
+            />
+          </div>
 
-        <div class="col-span-1">
-          <label for="item.type" class="block font-bold mb-2">
-            Contato relacionado
-          </label>
-           <AutoComplete
-            id="item.related_id"
-            v-model="item.related_id"
-            :suggestions="filteredItems_related_id"
-            @complete="searchItems_related_id($event)"
-            field="value"
-            placeholder="Buscar um item"
-            dropdown
-            forceSelection
-            :dropdownMode="'current'"
-            optionLabel="value"
-            optionValue="key"
-            class="w-full"
-            :inputClass="'w-full'"
-          ></AutoComplete>
-          
-        </div>
+          <div class="col-span-1">
+            <label for="item.type" class="block font-bold mb-2">
+              Contato relacionado
+            </label>
+            <AutoComplete
+              id="item.related_id"
+              v-model="item.related_id"
+              :suggestions="filteredItems_related_id"
+              @complete="searchItems_related_id($event)"
+              field="value"
+              placeholder="Buscar um item"
+              dropdown
+              forceSelection
+              :dropdownMode="'current'"
+              optionLabel="value"
+              optionValue="key"
+              class="w-full"
+              :inputClass="'w-full'"
+            ></AutoComplete>
+          </div>
 
-       
-        <div class="col-span-2">
-          <label :for="item.decription" class="block font-bold mb-2">
-            Obs
-          </label>
-          <Textarea
-            :id="item.obs"
-            v-model="item.obs"
-            rows="2"
-            cols="67"
-          />
+          <div class="col-span-2">
+            <label :for="item.decription" class="block font-bold mb-2">
+              Obs
+            </label>
+            <Textarea :id="item.obs" v-model="item.obs" rows="2" cols="67" />
+          </div>
         </div>
-      </div>
       </form>
       <template #footer>
         <Button label="Fechar" icon="pi pi-times" text @click="hideDialog" />
-        <Button label="Salvar" icon="pi pi-check" @click="saveItem" :disabled="editSaveButtonPressed"/>
+        <Button
+          label="Salvar"
+          icon="pi pi-check"
+          @click="saveItem"
+          :disabled="editSaveButtonPressed"
+        />
       </template>
-      
     </Dialog>
 
     <Dialog
@@ -324,13 +320,10 @@ import { useRoute } from "vue-router";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import InputText from "primevue/inputtext";
-import InputNumber from "primevue/inputnumber";
 import Calendar from "primevue/calendar";
-import Dropdown from "primevue/dropdown";
-import Select from "primevue/select";
 import CustomSelect from "~/components/CustomSelect.vue";
-import { ca } from "date-fns/locale";
-import { parseISO,format, parse  } from 'date-fns';
+import { parseISO, format, parse } from "date-fns";
+import { executeQuery, executeQueryRun, formatCurrency } from '@/utils/db'
 
 const toast = useToast();
 const route = useRoute();
@@ -345,33 +338,19 @@ const deleteItemsDialog = ref(false);
 const selectedItems = ref([]);
 const submitted = ref(false);
 const editSaveButtonPressed = ref(false);
-const filteredItems_related_id  = ref([])
-const amount = ref(null);
-const flag_categorias_select_active = ref(false)
+const filteredItems_related_id = ref([]);
+const flag_categorias_select_active = ref(false);
 const op = computed(() => route.query.op);
 const item_type_options = [
   { key: "entrada", value: "Entrada" },
   { key: "saída", value: "Saída" }
 ];
-const payment_method_ops = ref([])
-const flg_isEdit = ref(false)
+const payment_method_ops = ref([]);
+const flg_isEdit = ref(false);
+const categoryOptions = ref([]);
+const contactsOptions = ref([]);
 const { getUser } = useUser();
 const { data: ret, error } = await getUser();
-console.log("user>22>>>:", ret.value.user.id);
-
-
-function buildCategoryTree(categories, parentId = null) {
-  return categories
-    .filter(category => category.parent_id === parentId)
-    .map(category => ({
-      key: category.id,
-      label: category.name,
-      type: category.type,
-      description: category.description,
-      node_type: category.node_type,
-      children: buildCategoryTree(categories, category.id)
-    }));
-}
 
 const searchItems = event => {
   setTimeout(() => {
@@ -397,22 +376,10 @@ const searchItems_related_id = event => {
   }, 250);
 };
 
-const onItemSelect = event => {
-  console.log("Selected Item:", event.value);
-  // alert(event.value)
-  // You can perform additional actions here when an item is selected
-};
-
-
-// function formatDateBR(date) {
-//   if (!date) return "";
-//   return new Date(date).toLocaleDateString("pt-BR");
-// }
-
 function formatDateBR(isoString) {
   const date = new Date(isoString);
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-based
   const year = date.getUTCFullYear();
   return `${day}-${month}-${year}`;
 }
@@ -483,11 +450,6 @@ const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
-const categoryOptions = ref([]);
-const categoryRelationedOptions = ref([]);
-const contactsOptions = ref([]);
-const categoryTree = ref([]);
-
 const columns = ref([
   {
     field: "date",
@@ -523,15 +485,6 @@ const columns = ref([
     style: { "min-width": "5rem" },
     editTemplate: InputText
   },
-  // {
-  //   field: "source_category_id",
-  //   header: "Categoria - Origem",
-  //   sortable: true,
-  //   style: { "min-width": "10rem" },
-  //   editTemplate: "Select",
-  //   options: categoryRelationedOptions,
-  //   hidden: true
-  // },
   {
     field: "amount",
     header: "Valor",
@@ -586,44 +539,13 @@ const columns = ref([
 
 item.value.tipo = "entrada";
 
-function buildTreeOptions(data) {
-  const map = new Map();
-  const tree = [];
-
-  // 1. Indexar por id
-  data.forEach(item => map.set(item.id, { ...item, children: [] }));
-
-  // 2. Montar estrutura em árvore
-  data.forEach(item => {
-    if (item.parent_id) {
-      const parent = map.get(item.parent_id);
-      if (parent) parent.children.push(map.get(item.id));
-    } else {
-      tree.push(map.get(item.id));
-    }
-  });
-
-  // 3. Gerar lista com caminho formatado
-  const result = [];
-
-  function walk(node, path) {
-    const fullPath = path ? `${path} >> ${node.name}` : node.name;
-    result.push({ key: node.id, value: fullPath });
-    node.children.forEach(child => walk(child, fullPath));
-  }
-
-  tree.forEach(root => walk(root, ""));
-  return result;
-}
-
 const visibleColumns = computed(() => {
   return columns.value.filter(col => !col.hidden);
 });
 
 const fetchDados = async newVal => {
-  //fc.name AS category,
-  console.log("newVal", newVal);
-  // alert(JSON.stringify(newVal))
+
+  //Get lançamentos
   const data = await executeQuery(
     domain,
     ` WITH RECURSIVE category_path AS (
@@ -658,148 +580,71 @@ const fetchDados = async newVal => {
     LEFT JOIN contacts c ON ft.related_id = c.id
     ORDER BY ft.date DESC;`
   );
-  // const data = await executeQuery(domain, `SELECT * FROM financial_transactions where type like '${newVal}'`)
+  items.value = data;
 
-  console.log("444444$$", data);
 
-  const cats = await executeQuery(
+  // Get categorias ( recursivamente )
+  const categorias = await executeQuery(
     domain,
-    `
-    WITH RECURSIVE category_tree AS (
-  SELECT 
-    id,
-    parent_id,
-    name,
-    type,
-    node_type,
-    name AS full_path
-  FROM financial_categories
-  WHERE parent_id IS NULL
+    ` WITH RECURSIVE category_tree AS (
+      SELECT 
+        id,
+        parent_id,
+        name,
+        type,
+        node_type,
+        name AS full_path
+      FROM financial_categories
+      WHERE parent_id IS NULL
 
-  UNION ALL
+      UNION ALL
 
-  SELECT 
-    fc.id,
-    fc.parent_id,
-    fc.name,
-    fc.type,
-    fc.node_type,
-    ct.full_path || ' › ' || fc.name
-  FROM financial_categories fc
-  JOIN category_tree ct ON fc.parent_id = ct.id
-)
-SELECT 
-  id AS key, 
-  full_path AS value
-FROM category_tree
-WHERE 
-(node_type is null or 
-  node_type != 'grupo')
-  AND type = '${newVal}' 
-  
-ORDER BY full_path;
+      SELECT 
+        fc.id,
+        fc.parent_id,
+        fc.name,
+        fc.type,
+        fc.node_type,
+        ct.full_path || ' › ' || fc.name
+      FROM financial_categories fc
+      JOIN category_tree ct ON fc.parent_id = ct.id
+    )
+    SELECT 
+      id AS key, 
+      full_path AS value
+    FROM category_tree
+    WHERE 
+    (node_type is null or 
+      node_type != 'grupo')
+      ${newVal ? `AND type = '${newVal}'` : ""}
+    ORDER BY full_path;
   `
   );
+  categoryOptions.value = [{ key: null, value: "---" }, ...categorias];
 
-  const cats_relationed = await executeQuery(
-    domain,
-    `
-    WITH RECURSIVE category_tree AS (
-  SELECT 
-    id,
-    parent_id,
-    name,
-    type,
-    node_type,
-    name AS full_path
-  FROM financial_categories
-  WHERE parent_id IS NULL
 
-  UNION ALL
-
-  SELECT 
-    fc.id,
-    fc.parent_id,
-    fc.name,
-    fc.type,
-    fc.node_type,
-    ct.full_path || ' › ' || fc.name
-  FROM financial_categories fc
-  JOIN category_tree ct ON fc.parent_id = ct.id
-)
-SELECT 
-  id AS key, 
-  full_path AS value
-FROM category_tree
-WHERE 
-(node_type is null or 
-  node_type != 'grupo')
-  AND type = 'entrada' 
-  
-ORDER BY full_path;
-  `
-  );
-
-  categoryOptions.value = [{ key: null, value: "---" }, ...cats];
-
-  categoryRelationedOptions.value = [
-    { key: null, value: "---" },
-    ...cats_relationed
-  ];
-
+  // Get contatos
   const contacts = await executeQuery(domain, `SELECT * FROM contacts`);
-  // categoryOptions.value = cats.map(cat => ({ value: cat.name, key: cat.id }));
   contactsOptions.value = contacts.map(cat => ({
     value: cat.name,
     key: cat.id
   }));
 
-  const sql_payment_method_ops = await executeQuery(domain, `SELECT * FROM financial_payment_methods`);
+
+  //Get payment methods
+  const sql_payment_method_ops = await executeQuery(
+    domain,
+    `SELECT * FROM financial_payment_methods`
+  );
   payment_method_ops.value = sql_payment_method_ops.map(cat => ({
     value: cat.name,
     key: cat.id
   }));
-
-
-
-
-
-  items.value = data;
-
-
-const aa = await executeQuery(domain, `SELECT * FROM financial_categories where type = '${newVal}'`);
-   categoryTree.value = buildCategoryTree(aa);
-  console.log('categoryTree:', categoryTree.value)
+  
 };
 
-onMounted(async () => {
-  await fetchDados(op.value);
-});
-
-async function executeQuery(domain, sql) {
-  const res = await fetch(`/api/${domain}/query`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sql })
-  });
-  return await res.json();
-}
-
-function formatDate(date) {
-  const options = { year: "numeric", month: "2-digit", day: "2-digit" };
-  return new Date(date).toLocaleDateString("pt-BR", options);
-}
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2
-  }).format(value);
-}
-
 function openNew() {
-  flg_isEdit.value = false
+  flg_isEdit.value = false;
   item.value = {};
   item.value.type = route.query.op;
   item.value.date = new Date();
@@ -814,7 +659,7 @@ function hideDialog() {
 
 async function saveItem() {
   submitted.value = true;
-  editSaveButtonPressed.value = true
+  editSaveButtonPressed.value = true;
   let isValid = true;
   // for (const col of columns.value) {
   //   if (col.editTemplate && !item.value[col.field]) {
@@ -824,13 +669,13 @@ async function saveItem() {
   // }
 
   // if (!isValid) return;
-console.log('item.value', item.value);
+  console.log("item.value", item.value);
 
-   const dataToSave = {
+  const dataToSave = {
     ...item.value,
-    amount: item.value.type=='saída' && -Math.abs(Number(item.value.amount)),
-    date: item.value.date ? format(item.value.date, 'yyyy-MM-dd') : null,
-    
+    amount: item.value.type == "saída"? -Math.abs(Number(item.value.amount)):Math.abs(Number(item.value.amount)),
+    date: item.value.date ? format(item.value.date, "yyyy-MM-dd") : null,
+
     created_by: ret.value.user.id,
     category_id: item.value.category_id?.key,
     related_id: item.value.related_id?.key
@@ -863,7 +708,7 @@ console.log('item.value', item.value);
       life: 3000
     });
   } else {
-    editSaveButtonPressed.value = false
+    editSaveButtonPressed.value = false;
     toast.add({
       severity: "success",
       summary: "Sucesso",
@@ -872,16 +717,14 @@ console.log('item.value', item.value);
     });
 
     // itemDialog.value = false;
-    const aux_type = item.value.type
+    const aux_type = item.value.type;
     item.value = {};
     item.value.date = new Date();
     item.value.type = aux_type;
     console.log(">>>>", op);
 
-    // alert()
-    // alert(JSON.stringify(op))
     if (flg_isEdit.value) {
-      flg_isEdit.value = false
+      flg_isEdit.value = false;
       itemDialog.value = false;
     }
     await fetchDados(aux_type);
@@ -889,39 +732,22 @@ console.log('item.value', item.value);
 }
 
 async function editItem(row) {
-  flg_isEdit.value = true
-  item.value = { ...row }
-  item.value.category_id = categoryOptions.value.find(x=>x.key===row.category_id)
-  item.value.related_id = contactsOptions.value.find(x=>x.key===row.related_id)
-  item.value.date = parseISO(`${item.value.date.split('T')[0]}T00:00:00`);
+  flg_isEdit.value = true;
+  item.value = { ...row };
+  item.value.category_id = categoryOptions.value.find(
+    x => x.key === row.category_id
+  );
+  item.value.related_id = contactsOptions.value.find(
+    x => x.key === row.related_id
+  );
+  item.value.date = parseISO(`${item.value.date.split("T")[0]}T00:00:00`);
 
   if (item.value.category_id) itemDialog.value = true;
-
 }
-
 
 function confirmDeleteItem(row) {
   item.value = { ...row };
   deleteItemDialog.value = true;
-}
-
-async function executeQueryRun(domain, sql) {
-  // Added domain
-  try {
-    const response = await fetch(`/api/${domain}/queryRun`, {
-      // Changed URL
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ sql })
-    });
-    // Handle errors like before
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    // Handle error
-  }
 }
 
 async function deleteItem() {
@@ -955,26 +781,24 @@ async function deleteSelectedItems() {
   toast.add({ severity: "success", summary: "Removidos", life: 3000 });
 }
 
-// Reage à mudança na query string
-// watch(
-//   () => route.query.op,
-//   newVal => {
-//     fetchDados(newVal);
-//   }
-// );
+onMounted(async () => {
+  await fetchDados(op.value);
+});
+
 
 watch(
   () => item.value.type,
   newVal => {
     // alert(items.value.type)
-    flag_categorias_select_active.value = true
+    flag_categorias_select_active.value = true;
     fetchDados(newVal);
   }
 );
 </script>
+
 <style scoped>
 ::v-deep .last-row-highlight .p-datatable-tbody > tr:last-child {
-  background-color: #2196F3 !important;
+  background-color: #2196f3 !important;
   color: white !important;
 }
 </style>
