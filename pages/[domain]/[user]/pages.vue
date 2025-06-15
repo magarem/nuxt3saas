@@ -125,7 +125,6 @@
             <label :for="col.field" class="block font-bold mb-3">{{
               col.header
             }}</label>
-
             <component
               :is="col.editTemplate"
               v-model="item[col.field]"
@@ -321,33 +320,6 @@ async function executeQueryRun(domain, sql) {
     // Handle error
   }
 }
-async function executeQueryRun_(domain, sql, params = []) {
-  try {
-    const response = await fetch(`/api/${domain}/queryRun`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ sql, params })
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        data.error || `Erro ao executar consulta: ${response.status}`
-      );
-    }
-    return data;
-  } catch (error) {
-    console.error("Erro em executeQueryRun:", error);
-    toast.add({
-      severity: "error",
-      summary: "Erro",
-      detail: String(error),
-      life: 5000
-    });
-    return null;
-  }
-}
 
 async function fetchData() {
   const data = await executeQuery(
@@ -370,7 +342,15 @@ async function fetchData() {
   );
 
   console.log("Fetched data:", data);
-  items.value = data;
+  // items.value = data;
+
+  items.value = data.map(page => {
+    return {
+        ...page,
+        roles_ids: page.roles_ids ? page.roles_ids.split(',').map(id => Number(id.trim())) : [],
+        roles_names: page.roles_names ? page.roles_names.split(',').map(name => name.trim()) : []
+    };
+});
 }
 
 function openNew() {

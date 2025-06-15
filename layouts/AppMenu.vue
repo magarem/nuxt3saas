@@ -161,7 +161,11 @@ console.log("tokenUser.value.user.allowedPages:", tokenUser.value?.user?.allowed
 console.log("domain:", tokenUser.value.user.domain);
 // console.log("user:", user);
 model.value = filterMenuByAllowedPages(model.value, tokenUser.value.user.allowedPages, tokenUser.value.user.domain, tokenUser.value.user.username);
-
+model.value[0].items.unshift({
+ label: domain_,
+  icon: "pi pi-fw pi-home",
+  to: `/${domain}/${user}/dashboard`
+});
 
 watch(() => router.currentRoute.value.path, (newPath) => {
   currentPath.value = newPath;
