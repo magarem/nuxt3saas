@@ -41,11 +41,8 @@
             'flex items-start space-x-2'
           ]"
         >
-        
           <Avatar
-            :image="
-              '/api/' + domain + '/' + email.senderName + '/uploads/avatar.png'
-            "
+            :image="email.avatar"
             :label="getInitials(email.from)"
             class="mr-2"
             shape="circle"
@@ -266,6 +263,20 @@ function handleShow() {
   });
 }
 
+const checkImageExists = async (url) => {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    if (response.ok) {
+      return url;
+    } else {
+      return '/avatar-default-icon.png';
+    }
+  } catch (error) {
+    console.error('Error checking image existence:', error);
+    return '/avatar-default-icon.png';
+  }
+};
+
 watch(isComposing, async val => {
   if (val) {
     nextTick(() => {
@@ -354,6 +365,18 @@ async function fetchEmails() {
   } else {
     emails.value = [];
   }
+const emailPromises = emails.value.map(async email => {
+    return {
+      ...email,
+      avatar: await checkImageExists(`/api/${domain}/${email.senderName}/uploads/avatar.png`)
+    };
+  });
+
+  // Wait for all promises in the array to resolve
+  emails.value = await Promise.all(emailPromises);
+
+  console.log("emails.value:", emails.value);
+
 }
 
 const sortedEmails = computed(() => {
@@ -561,6 +584,10 @@ onBeforeMount(async () => {
 });
 
 onMounted(() => {
+
+
+  console.log("sortedEmails", sortedEmails.value);
+  
   websocket = new WebSocket('wss://suryanet.site/ws/'); // Endereço do seu servidor WebSocket
 
   websocket.onopen = async () => {

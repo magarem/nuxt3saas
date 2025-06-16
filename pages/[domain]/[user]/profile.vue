@@ -186,6 +186,21 @@ const changePasswordForm = ref({
   confirmPassword: ""
 });
 
+
+const checkImageExists = async (url) => {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    if (response.ok) {
+      return url;
+    } else {
+      return '/avatar-default-icon.png';
+    }
+  } catch (error) {
+    console.error('Error checking image existence:', error);
+    return '/avatar-default-icon.png';
+  }
+}
+
 async function updatePassword() {
   // Lógica para atualizar a senha
   // Verifique se currentPassword está correto (você precisa fazer isso no backend)
@@ -271,7 +286,8 @@ async function fetchUserProfile() {
     if (response?.length > 0) {
       profile.value = response[0]; // Espalhe os dados do usuário e limpe a senha
 
-      profile.value.foto = `/api/${domain}/${profile.value.nome}/uploads/avatar.png?${Date.now()}`;
+      
+      profile.value.foto = await checkImageExists(`/api/${domain}/${profile.value.nome}/uploads/avatar.png?${Date.now()}`)
       // profile.value.foto = `/${domain}/${profile.value.nome}/avatar.png`
     } else {
       toast.add({
