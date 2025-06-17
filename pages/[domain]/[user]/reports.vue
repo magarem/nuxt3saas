@@ -1,58 +1,69 @@
 <template>
   <span class="text-[28px] mr-3">Relatórios</span>
-  <div class="my-4">
-    {{ selectedCategory }}
-    <Calendar
-      v-model="startDate"
-      placeholder="Data início"
-      showIcon
-      dateFormat="dd/mm/yy"
-      locale="brLocale"
-      class="mr-3"
-    />
-    <Calendar
-      v-model="endDate"
-      placeholder="Data fim"
-      showIcon
-      dateFormat="dd/mm/yy"
-      locale="brLocale"
-      class="mr-3"
-    />
-    <Dropdown
-      v-model="selectedCategory"
-      :options="categories"
-      optionLabel="value"
-      optionValue="key"
-      placeholder="Filtrar por categoria"
-      class="min-w-[200px] mr-3"
-    />
-    <Button
-      label="Carregar Transações"
-      @click="load"
-      class="p-button-raised p-button-success"
-    />
+  <div class="grid grid-cols-2 ">
+    <div class="p-2">
+      <SuperCard title="Filtros" class="w-full">
+        <div class="my-4 flex flex-col gap-4">
+          <Calendar
+            v-model="startDate"
+            placeholder="Data início"
+            showIcon
+            dateFormat="dd/mm/yy"
+            locale="brLocale"
+            class="mr-3"
+          />
+          <Calendar
+            v-model="endDate"
+            placeholder="Data fim"
+            showIcon
+            dateFormat="dd/mm/yy"
+            locale="brLocale"
+            class="mr-3"
+          />
+          <Dropdown
+            v-model="selectedCategory"
+            :options="categories"
+            optionLabel="value"
+            optionValue="key"
+            placeholder="Filtrar por categoria"
+            class="min-w-[200px] mr-3"
+          />
+          <Button
+            label="Carregar Transações"
+            @click="load_data"
+            class="p-button-raised p-button-success"
+          />
+        </div>
+      </SuperCard>
+    </div>
+    <div class="p-2">
+      <SuperCard title="Resumo Financeiro" class="w-full">
+        <LabelValueTable :data="noticeDetails" />
+      </SuperCard>
+    </div>
+    <div class="col-span-2 p-2 my-2">
+      <SuperCard title="Lançamentos">
+        <FinancialTransactionDatatable
+          :transactions="transactions"
+          @view="row_view"
+        />
+      </SuperCard>
+    </div>
   </div>
-  <FinancialTransactionDatatable
-    :transactions="transactions"
-    @view="row_view"
-  />
-   <div class="mt-5" _class="flex justify-center items-center min-h-screen bg-gray-50">
-    <FinanceCard :finance="totals[0]" />
-  </div>
-  <!-- <pre>
-  {{ transactions }}
-</pre> -->
 </template>
 
 <script setup lang="ts">
 import FinancialTransactionDatatable from "@/components/FinancialTransactionDatatable.vue";
 import FinanceCard from '@/components/FinanceCard.vue'
+import SuperCard from '@/components/SuperCard.vue'
 import {
   executeQuery,
   executeQueryRun,
   formatCurrency,
   formatDateForSQL
 } from "@/utils/db";
+import LabelValueTable from '@/components/LabelValueTable.vue'
+
 
 const route = useRoute();
 const domain = route.params.domain;
@@ -62,10 +73,26 @@ const transactions = ref([]);
 const totals = ref([]);
 const startDate = ref(null);
 const endDate = ref(null);
+const noticeDetails = ref([]);
+const total_categories = ref();
 
-function load() {
-  load_transactions(); 
-  load_totais()
+
+async function load_data() {
+  transactions.value = await load_transactions();
+  totals.value = await load_totais()
+  categories.value = await load_categories();
+  total_categories.value = await load_totals_of_categories()
+  noticeDetails.value = {
+    title: 'Resumo Financeiro',
+    subtitle: 'Dados financeiros do período selecionado',
+    icon: 'pi pi-chart-line',
+    items:[
+    { label: 'Total de transações', value: transactions.value.length },
+    { label: 'Total de categorias', value: totals.value[0].total_categories },
+    { label: 'Total de entradas', value: formatCurrency(totals.value[0]?.entradas || 0) },
+    { label: 'Total de saídas', value: formatCurrency(totals.value[0]?.saidas || 0) },
+    { label: 'Saldo', value: formatCurrency(totals.value[0]?.saldo || 0)}
+  ]}
 }
 
 function row_view(row) {
@@ -74,9 +101,9 @@ function row_view(row) {
   // Implement the logic to view the transaction details
 }
 
-const fetchCategories = async () => {
+const load_categories = async () => {
   const res = await $fetch(`/api/${domain}/categories`);
-  categories.value = [{ key: "", value: "Limpar filtro" }, ...res];
+  return [{ key: "", value: "Limpar filtro" }, ...res];
 };
 
 const load_transactions = async () => {
@@ -91,7 +118,7 @@ const load_transactions = async () => {
    WITH RECURSIVE category_path AS (
   SELECT id, parent_id, name, type, name AS full_path
   FROM financial_categories
-  WHERE parent_id IS NULL 
+  WHERE parent_id IS NULL
 
   UNION ALL
 
@@ -125,21 +152,28 @@ LEFT JOIN category_path cp ON fc.id = cp.id
 LEFT JOIN users u ON ft.created_by = u.id
 LEFT JOIN contacts c ON ft.related_id = c.id
 LEFT JOIN financial_payment_methods fpm ON ft.payment_method = fpm.id
-WHERE ft.date BETWEEN 
+WHERE ft.date BETWEEN
   CASE WHEN ${params.start_date} IS NULL THEN '1970-01-01' ELSE '${params.start_date}' END
-  AND 
+  AND
   CASE WHEN ${params.end_date} IS NULL THEN '2100-01-01' ELSE '${params.end_date}' END
 `;
 
  if (selectedCategory.value) {
-    sql += ` AND ft.category_id = ${selectedCategory.value}`;
+  sql += `
+  AND ft.category_id IN (
+  SELECT id FROM category_path
+  WHERE full_path LIKE (
+    SELECT full_path || '%' FROM category_path WHERE id = ${selectedCategory.value}
+  )
+  )`
+    // sql += ` AND ft.category_id = ${selectedCategory.value}`;
   }
 
   sql += ` ORDER BY ft.date DESC;`;
 
   console.log("SQL Query:", sql);
   const res = await executeQuery(domain, sql);
-  transactions.value = res;
+  return res;
 };
 
 const load_totais = async () => {
@@ -150,29 +184,106 @@ const load_totais = async () => {
 
   console.log("totals Loading transactions with params:", params);
 
-  let sql = `
-  SELECT 
-      SUM(CASE WHEN type = 'entrada' THEN amount ELSE 0 END) AS entradas,
-      SUM(CASE WHEN type = 'saída' THEN amount ELSE 0 END) AS saidas,
-      SUM(amount) AS saldo
-FROM financial_transactions
-WHERE date BETWEEN 
-  CASE WHEN ${params.start_date} IS NULL THEN '1970-01-01' ELSE '${params.start_date}' END
-  AND 
-  CASE WHEN ${params.end_date} IS NULL THEN '2100-01-01' ELSE '${params.end_date}' END
-`;
-  if (selectedCategory.value) {
-    sql += ` AND category_id = ${selectedCategory.value}`;
-  }
+  const category_id = selectedCategory.value ?? null
 
-  sql += ` ORDER BY date DESC;`;
+  let sql = `
+ WITH RECURSIVE category_path AS (
+  -- Build the category tree
+  SELECT id, parent_id, name, type, name AS full_path
+  FROM financial_categories
+  WHERE parent_id IS NULL
+
+  UNION ALL
+
+  SELECT fc.id, fc.parent_id, fc.name, fc.type, cp.full_path || ' › ' || fc.name
+  FROM financial_categories fc
+  JOIN category_path cp ON fc.parent_id = cp.id
+),
+
+filtered_categories AS (
+  -- Return categories to filter or all if no category selected
+  SELECT id FROM category_path
+  WHERE ${category_id} IS NULL
+     OR full_path LIKE (
+        SELECT full_path || '%' FROM category_path WHERE id = ${category_id}
+     )
+)
+
+SELECT
+  COUNT(*) AS total_operations,
+  COUNT(DISTINCT category_id) AS total_categories,
+  SUM(CASE WHEN type = 'entrada' THEN amount ELSE 0 END) AS entradas,
+  SUM(CASE WHEN type = 'saída' THEN amount ELSE 0 END) AS saidas,
+  SUM(amount) AS saldo
+FROM financial_transactions
+WHERE date BETWEEN
+  CASE WHEN ${params.start_date} IS NULL THEN '1970-01-01' ELSE '${params.start_date}' END
+  AND
+  CASE WHEN ${params.end_date} IS NULL THEN '2100-01-01' ELSE '${params.end_date}' END
+  AND (
+    ${category_id} IS NULL
+    OR category_id IN (SELECT id FROM filtered_categories)
+  );
+
+
+`;
+
+
+  // if (selectedCategory.value) {
+  //   sql += ` AND category_id IN (SELECT id FROM filtered_categories)`;
+  // }
+
+
+  // if (selectedCategory.value) {
+  //   sql += `
+  //   AND category_id IN (
+  //   SELECT id FROM category_path
+  //   WHERE full_path LIKE (
+  //     SELECT full_path || '%' FROM category_path WHERE id = ${selectedCategory.value}
+  //   )
+  //   )`
+  //   // sql += ` AND ft.category_id = ${selectedCategory.value}`;
+  // }
+
+
+
+
   console.log("totais - SQL Query:", sql);
   const res = await executeQuery(domain, sql);
-  totals.value = res;
+  return res;
 };
 
-fetchCategories();
-load_transactions();
-load_totais();
-// transactions.value = await load_transactions();
+const load_totals_of_categories = async () => {
+
+  let sql = `
+  WITH RECURSIVE category_path AS (
+  -- Base: Get all root categories (those without a parent)
+  SELECT id, parent_id, name, type, name AS full_path
+  FROM financial_categories
+  WHERE parent_id IS NULL
+
+  UNION ALL
+
+  -- Recursive: Get all children categories
+  SELECT fc.id, fc.parent_id, fc.name, fc.type, cp.full_path || ' › ' || fc.name
+  FROM financial_categories fc
+  JOIN category_path cp ON fc.parent_id = cp.id
+)
+
+-- Final Selection: List the parent and all its subcategories
+SELECT id, name, full_path
+FROM category_path`;
+
+  if (selectedCategory.value) {
+    sql += ` WHERE full_path LIKE (
+  SELECT full_path || '%' FROM category_path WHERE id = ${selectedCategory.value})
+    `;
+  }
+
+  console.log("totais categorys - SQL Query:", sql);
+  const res = await executeQuery(domain, sql);
+  return res.length;
+};
+
+load_data()
 </script>
