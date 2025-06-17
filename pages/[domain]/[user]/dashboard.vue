@@ -1,13 +1,20 @@
 <template>
   <div _class="p-4 max-w-4xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+    <!-- <h1 class="text-2xl font-bold mb-6">Dashboard</h1> -->
     <!-- Show form only if the user has permission -->
+   
+    <!-- Notices visible to this user's roles -->
+    <SuperCard title="Quadro de avisos" class="mb-6">
+      <NoticeBoardList :notices="notices" />
+    </SuperCard>
+   
     <div v-if="canPost" class="mb-6">
-      <NoticeBoardForm @notice-created="loadNotices" />
+      <SuperCard title="Criar aviso">
+        <NoticeBoardForm @notice-created="loadNotices" />
+      </SuperCard>
     </div>
 
-    <!-- Notices visible to this user's roles -->
-    <NoticeBoardList :notices="notices" />
+   
   </div>
 </template>
 

@@ -1,39 +1,49 @@
 <template>
-  <span class="text-[28px] mr-3">Relatórios</span>
+  <span class="text-[20px] mr-3">Relatórios</span>
   <div class="grid grid-cols-2 ">
     <div class="p-2">
       <SuperCard title="Filtros" class="w-full">
-        <div class="my-4 flex flex-col gap-4">
-          <Calendar
-            v-model="startDate"
-            placeholder="Data início"
-            showIcon
-            dateFormat="dd/mm/yy"
-            locale="brLocale"
-            class="mr-3"
-          />
-          <Calendar
-            v-model="endDate"
-            placeholder="Data fim"
-            showIcon
-            dateFormat="dd/mm/yy"
-            locale="brLocale"
-            class="mr-3"
-          />
-          <Dropdown
-            v-model="selectedCategory"
-            :options="categories"
-            optionLabel="value"
-            optionValue="key"
-            placeholder="Filtrar por categoria"
-            class="min-w-[200px] mr-3"
-          />
-          <Button
-            label="Carregar Transações"
-            @click="load_data"
-            class="p-button-raised p-button-success"
-          />
-        </div>
+       <div class="my-4 flex flex-col gap-4">
+  <DatePicker
+    v-model="startDate"
+    placeholder="Data início"
+    showIcon
+    dateFormat="dd/mm/yy"
+   
+    class="mr-3"
+  />
+  <DatePicker
+    v-model="endDate"
+    placeholder="Data fim"
+    showIcon
+    dateFormat="dd/mm/yy"
+    
+    class="mr-3"
+  />
+  <Dropdown
+    v-model="selectedCategory"
+    :options="categories"
+    optionLabel="value"
+    optionValue="key"
+    placeholder="Filtrar por categoria"
+    class="min-w-[200px] mr-3"
+  />
+  
+  <!-- Wrap buttons in a flex container -->
+  <div class="flex gap-4">
+    <Button
+      label="Limpar Filtros"
+      @click="selectedCategory = null; startDate = null; endDate = null; transactions = []; load_data()"
+      class="w-1/2 p-button-raised p-button-secondary"
+    />
+    <Button
+      label="Carregar Transações"
+      @click="load_data"
+      class="w-1/2 p-button-raised p-button-success"
+    />
+  </div>
+</div>
+
       </SuperCard>
     </div>
     <div class="p-2">
@@ -64,7 +74,6 @@ import {
 } from "@/utils/db";
 import LabelValueTable from '@/components/LabelValueTable.vue'
 
-
 const route = useRoute();
 const domain = route.params.domain;
 const categories = ref([]);
@@ -74,14 +83,24 @@ const totals = ref([]);
 const startDate = ref(null);
 const endDate = ref(null);
 const noticeDetails = ref([]);
-const total_categories = ref();
+
+// Localização em português do Brasil
+const brLocale = {
+  firstDayOfWeek: 0,
+  dayNames: ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"],
+  dayNamesShort: ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"],
+  dayNamesMin: ["D", "S", "T", "Q", "Q", "S", "S"],
+  monthNames: ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"],
+  monthNamesShort: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"],
+  today: 'Hoje',
+  clear: 'Limpar'
+};
 
 
 async function load_data() {
   transactions.value = await load_transactions();
   totals.value = await load_totais()
   categories.value = await load_categories();
-  total_categories.value = await load_totals_of_categories()
   noticeDetails.value = {
     title: 'Resumo Financeiro',
     subtitle: 'Dados financeiros do período selecionado',
@@ -251,38 +270,6 @@ WHERE date BETWEEN
   console.log("totais - SQL Query:", sql);
   const res = await executeQuery(domain, sql);
   return res;
-};
-
-const load_totals_of_categories = async () => {
-
-  let sql = `
-  WITH RECURSIVE category_path AS (
-  -- Base: Get all root categories (those without a parent)
-  SELECT id, parent_id, name, type, name AS full_path
-  FROM financial_categories
-  WHERE parent_id IS NULL
-
-  UNION ALL
-
-  -- Recursive: Get all children categories
-  SELECT fc.id, fc.parent_id, fc.name, fc.type, cp.full_path || ' › ' || fc.name
-  FROM financial_categories fc
-  JOIN category_path cp ON fc.parent_id = cp.id
-)
-
--- Final Selection: List the parent and all its subcategories
-SELECT id, name, full_path
-FROM category_path`;
-
-  if (selectedCategory.value) {
-    sql += ` WHERE full_path LIKE (
-  SELECT full_path || '%' FROM category_path WHERE id = ${selectedCategory.value})
-    `;
-  }
-
-  console.log("totais categorys - SQL Query:", sql);
-  const res = await executeQuery(domain, sql);
-  return res.length;
 };
 
 load_data()

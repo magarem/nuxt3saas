@@ -1,6 +1,5 @@
 <template>
   <div class="p-4 rounded-xl shadow">
-    <h2 class="text-xl font-semibold mb-4">Add New Notice</h2>
     <form @submit.prevent="submitNotice">
       <textarea v-model="content" class="w-full p-2 border rounded mb-4" placeholder="Write your notice here..." rows="4"></textarea>
       <textarea v-model="role_ids" class="w-full p-2 border rounded mb-4" placeholder="Roles list" rows="1"></textarea>
