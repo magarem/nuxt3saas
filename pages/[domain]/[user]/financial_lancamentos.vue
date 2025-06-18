@@ -129,7 +129,7 @@
               Data
             </label>
             <!-- Campo de data -->
-            <Calendar
+            <DatePicker
               id="item.date"
               v-model="item.date"
               dateFormat="dd/mm/yy"

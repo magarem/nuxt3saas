@@ -27,21 +27,28 @@
           {{ formatDate(data.date) }}
         </template>
       </Column>
-
+<!-- 
       <Column field="description" header="Descrição" :sortable="true">
         <template #body="{ data }">
           {{ data.description || "-" }}
         </template>
-      </Column>
+      </Column> -->
 
       <Column field="category" header="Categoria" :sortable="true" />
 
-      <Column field="doc" header="Doc" :sortable="true">
+      <!-- <Column field="doc" header="Doc" :sortable="true">
         <template #body="{ data }">
           {{ data.doc || "-" }}
         </template>
+      </Column> -->
+  <Column field="type" header="Tipo" :sortable="true">
+        <template #body="{ data }">
+          <Tag
+            :value="data.type.toUpperCase()"
+            :severity="data.type === 'entrada' ? 'success' : 'danger'"
+          />
+        </template>
       </Column>
-
       <Column field="amount" header="Valor" :sortable="true">
         <template #body="{ data }">
           <span
@@ -52,20 +59,13 @@
         </template>
       </Column>
 
-      <Column field="type" header="Tipo" :sortable="true">
-        <template #body="{ data }">
-          <Tag
-            :value="data.type.toUpperCase()"
-            :severity="data.type === 'entrada' ? 'success' : 'danger'"
-          />
-        </template>
-      </Column>
+    
 
-      <Column field="payment_method_name" header="Método" :sortable="true">
+      <!-- <Column field="payment_method_name" header="Método" :sortable="true">
         <template #body="{ data }">
           {{ data.payment_method_name || "-" }}
         </template>
-      </Column>
+      </Column> -->
 
       <!-- <Column field="created_by_name" header="Created By" :sortable="true" />
       

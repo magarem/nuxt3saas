@@ -4,11 +4,11 @@
         <table class="label-value-table">
           <tbody>
             <tr
-              v-for="(item, index) in data.items"
+              v-for="(item, index) in data"
               :key="index"
               class="table-row"
             >
-              <td class="label-cell">{{ item.label }}</td>
+              <td class="label-cell" :style="`width: ${width_col1};`">{{ item.label }}</td>
               <td class="value-cell">{{ item.value }}</td>
             </tr>
           </tbody>
@@ -19,8 +19,12 @@
 
 <script setup>
 defineProps({
+    width_col1: {
+      type: String,
+      default: '40%'
+    },
   data: {
-    type: Object,
+    type: Array,
     required: true
   }
 });
@@ -33,7 +37,7 @@ defineProps({
   padding: 16px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
+  
 }
 
 .label-value-table {
@@ -54,13 +58,12 @@ defineProps({
   font-weight: 600;
   padding: 8px 16px 8px 0;
   size: 15px;
-  width: 60%;
   color: #f5f5f5; /* gray-700 */
   text-align: right; /* ✅ align label to the right */
 }
 
 .value-cell {
   padding: 8px 0;
-  color: #b1b1b1; /* gray-900 */
+  color: #fbf9f9; /* gray-900 */
 }
 </style>
